@@ -1,0 +1,15 @@
+﻿{
+    "types": [
+        {
+            "typeName": "EZNEW.ViewModel.CTask.Response.TriggerConditionViewModel,EZNEW.ViewModel.CTask, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
+            "displays": [
+                {
+                    "name": "Type",
+                    "display": {
+                        "displayTxt": "附加条件"
+                    }
+                }
+            ]
+        }
+    ]
+}

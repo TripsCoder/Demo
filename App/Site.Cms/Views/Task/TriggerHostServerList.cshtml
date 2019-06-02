@@ -1,0 +1,247 @@
+﻿@{
+    ViewBag.Title = "承载执行计划的服务";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+@using EZNEW.CTask
+@using EZNEW.ViewModel.CTask.Response
+@using EZNEW.Framework.Extension
+@using EZNEW.Framework.Serialize
+@model TriggerViewModel
+@{
+    var serverStateValues = ServerStatus.运行.GetType().GetEnumValueAndNames();
+    var triggerServerRunStateValues = TaskTriggerServerRunStatus.运行.GetType().GetEnumValueAndNames();
+}
+<environment>
+    <link href="~/style/css/table.css" rel="stylesheet" />
+</environment>
+<div id="page-head">
+    <div class="panel panel-default mg-0 bd-rad-0 bd-bw-0">
+        <div class="panel-body pd-10">
+            <div class="lis_lefttool">
+                @if (Model.ApplyTo == TaskTriggerApplyTo.服务)
+                {
+                    <button class="btn btn-xs btn-primary" id="btn_addserver"><i class="glyphicon glyphicon-plus"></i> 添加服务</button>
+                }
+            </div>
+            <div class="lis_search">
+            </div>
+        </div>
+    </div>
+</div>
+<div id="page-body">
+    <table class="datagrid-table wp-100" id="server_table" cellpadding="0" cellspacing="0"></table>
+</div>
+
+@section Scripts{
+    <environment>
+        <script src="~/scripts/table/jquery.dataTables.min.js"></script>
+        <script src="~/scripts/table/dataTables.fixedColumns.min.js"></script>
+    </environment>
+    <script type="text/javascript">
+        var applyAllServer='@((Model.ApplyTo== TaskTriggerApplyTo.所有).ToString().ToLower())'=='true';
+        var serverStatusDict=new Object();
+        var triggerServerRunStatusDict=new Object();
+        $(function () {
+            serverStatusDict=JSON.parse('@Html.Raw(JsonSerialize.ObjectToJson(serverStateValues))');
+            triggerServerRunStatusDict=JSON.parse('@Html.Raw(JsonSerialize.ObjectToJson(triggerServerRunStateValues))');
+            //服务列表
+            InitDataTable({
+                TableEle:'#server_table',
+                fixedColumns:{
+                    leftColumns:0
+                },
+                'columnDefs':[
+                { "title": "名称", "targets": 0,"data":'Server.Name',width:'150px' },
+                { "title": "服务状态", "targets": 1,"data":function ( row, type, val, meta ){
+                    return serverStatusDict[row.Server.Status];
+                },width:'100px',className:'txt-center' },
+                { "title": "调度状态", "targets": 2,"data":function ( row, type, val, meta ){
+                    return triggerServerRunStatusDict[row.RunStatus];
+                },width:'100px',className:'txt-center' },
+                { "title": "地址", "targets": 3,"data":'Server.Host' },
+                { "title": "操作", "targets": 4,"data":function(row,type,val,meta){
+                    var menuItems=new Array();
+                    menuItems.push('<li><a href="javascript:void(0)" class="btn_serverdetail dropdown-item" serverno="_sysNo" servername="_serverName"><i class="icon-list-alt"></i> 详情</a></li>'.replace('_sysNo',row.Server.Id).replace('_serverName',row.Server.Name));
+                    if(!applyAllServer)
+                    {
+                        if(row.RunStatus==@((int)TaskTriggerServerRunStatus.运行))
+                        {
+                            menuItems.push('<li><a href="javascript:void(0)" class="btn_serverdisable dropdown-item" serverno="_sysNo" servername="_serverName"><i class="icon-eye-close"></i> 停用</a></li>'.replace('_sysNo',row.Server.Id).replace('_serverName',row.Server.Name));
+                        }
+                        else
+                        {
+                            menuItems.push('<li><a href="javascript:void(0)" class="btn_serverenable dropdown-item" serverno="_sysNo" servername="_serverName"><i class="icon-eye-open"></i> 启用</a></li>'.replace('_sysNo',row.Server.Id).replace('_serverName',row.Server.Name));
+                    }
+                        menuItems.push('<li><a href="javascript:void(0)" class="btn_serverdelete dropdown-item" serverno="_sysNo" servername="_serverName"><i class="icon-trash"></i> 移除</a></li>'.replace('_sysNo',row.Server.Id).replace('_serverName',row.Server.Name));
+                    }
+                    return '<div class="btn-group"><button type="button" class="btn btn-primary dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">管  理 <span class="caret"></span></button><ul class="dropdown-menu list-dropdown-menu w-62">'+menuItems.join('')+'</ul></div>';
+        },width:'62px',className:'txt-center'}
+                ],
+                callback: function () {
+                    LoadServers();
+                }
+        });
+            //查看服务详情
+            $("body").on('click', '.btn_serverdetail', function () {
+                var sysNo = $.trim($(this).attr("serverno"));
+                if (sysNo == "") {
+                    return;
+                }
+                var detailUrl = '@Url.Action("ServerNodeDetail", "Task", new { Id="sys_no"})'.replace('sys_no', sysNo);
+                window.top.OpenNewTabPage(detailUrl, '服务详情');
+            });
+            //添加服务
+            $("#btn_addserver").click(function () {
+                OpenDialogPage({
+                    url: '@Url.Action("ServerNodeMultipleSelect", "Task")',
+                    width: "600px",
+                    height: "400px",
+                    title: '选择承载服务'
+                });
+            });
+            //停用服务
+            $("body").on('click','.btn_serverdisable',function(){
+                var serverNo=$.trim($(this).attr("serverno"));
+                if(serverNo==''){
+                    return;
+                }
+                var serverName=$.trim($(this).attr("servername"));
+                ModifyTriggerRunState(serverNo,serverName,@((int)TaskTriggerServerRunStatus.停止));
+            });
+            //启用服务
+            $("body").on('click','.btn_serverenable',function(){
+                var serverNo=$.trim($(this).attr("serverno"));
+                if(serverNo==''){
+                    return;
+                }
+                var serverName=$.trim($(this).attr("servername"));
+                ModifyTriggerRunState(serverNo,serverName,@((int)TaskTriggerServerRunStatus.运行));
+            });
+            //移除服务
+            $("body").on('click','.btn_serverdelete',function(){
+                var serverNo=$.trim($(this).attr("serverno"));
+                if(serverNo==''){
+                    return;
+                }
+                var serverName=$.trim($(this).attr("servername"));
+                var serverIds=new Array();
+                serverIds.push(serverNo);
+                RemoveServerTrigger(serverIds,serverName);
+            });
+        });
+
+        //加载承载服务信息
+        function LoadServers() {
+            var triggerIds = new Array();
+            triggerIds.push('@Model.Id');
+            var appToAll = '@((int)Model.ApplyTo)' == '@((int)TaskTriggerApplyTo.所有)';
+            if (!appToAll) {
+                var data = {
+                    Triggers: triggerIds
+                };
+                $.post('@Url.Action("SearchTriggerHostServer", "Task")', data, function (res) {
+                    var jsonData=JSON.parse(res.Datas);
+                    ReplaceDataTableData("#server_table",jsonData);
+                    $(window).resize();
+                });
+            } else {
+                var jobIds = new Array();
+                jobIds.push('@Model.Job?.Id');
+                var jobData = {
+                    Jobs: jobIds
+                };
+                $.post('@Url.Action("SearchTriggerHostServerByJob", "Task")', jobData, function (res) {
+                    var jsonData=JSON.parse(res.Datas);
+                    ReplaceDataTableData("#server_table",jsonData);
+                    $(window).resize();
+                });
+            }
+        }
+
+        //服务选择回调
+        function ServerNodeMultiSelectCallback(servers) {
+            if (!servers) {
+                return;
+            }
+            var triggerServers = new Array();
+            for (var s in servers) {
+                var nowServer = servers[s];
+                triggerServers.push({
+                    Server: {
+                        Id: nowServer.Id
+                    },
+                    Trigger: {
+                        Id: '@Model.Id'
+                    },
+                    RunState:'@((int)TaskTriggerServerRunStatus.运行)'
+                });
+            }
+            $.post('@Url.Action("SaveTriggerServer","Task")', { triggerServers: triggerServers }, function (res) {
+                ResultMsg(res);
+                if (res.Success) {
+                    LoadServers();
+                }
+            });
+        }
+
+        //修改调度计划运行状态
+        function ModifyTriggerRunState(serverId, serverName, state) {
+            if (!serverId || serverId == "") {
+                return;
+            }
+            var enableState=state==@((int)TaskTriggerServerRunStatus.运行);
+            var tipMsg = enableState?'启用后执行计划将会在该服务上调度执行,确认启用服务【'+serverName+'】吗?':'停用后执行计划将会在该服务上停止执行,确认停用服务【'+serverName+'】吗?';
+            var triggerServers=new Array();
+            triggerServers.push({
+                Server:{
+                    Id:serverId
+                },
+                Trigger:{
+                    Id:'@Model.Id'
+                },
+                RunStatus:state
+            });
+            ConfirmMsg(tipMsg, function () {
+                $.post('@Url.Action("ModifyTriggerServerStatus", "Task")', { triggerServers: triggerServers }, function (res) {
+                    ResultMsg(res);
+                    if (res.Success) {
+                        LoadServers();
+                    }
+                });
+            });
+        }
+
+        //移除承载服务
+        function RemoveServerTrigger(serverIdArray,serverName){
+            if(!serverIdArray||serverIdArray.length<=0){
+                return;
+            }
+            var triggerServers=new Array();
+            for(var s in serverIdArray)
+            {
+                triggerServers.push({
+                    Server:{
+                        Id:serverIdArray[s]
+                    },
+                    Trigger:{
+                        Id:'@Model.Id'
+                    }
+                });
+            }
+            var tipMsg=serverIdArray.length==1&&serverName!=""?'移除服务后将停止计划在该服务上的调度执行,确认移除服务【'+serverName+'】吗?':"移除服务后将停止计划在该服务上的调度执行,确认移除吗?";
+            ConfirmMsg(tipMsg, function () {
+                $.post('@Url.Action("DeleteTriggerServers", "Task")', { triggerServers: triggerServers }, function (res) {
+                    ResultMsg(res);
+                    if (res.Success) {
+                        LoadServers();
+                    }
+                });
+            });
+        }
+
+        //关闭
+        function CloseWindow() {
+            art.dialog.close(true);
+        }
+    </script>
+}

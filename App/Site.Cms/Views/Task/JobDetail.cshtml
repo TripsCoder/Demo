@@ -1,0 +1,712 @@
+﻿@{
+    ViewBag.Title = "任务详情";
+}
+@using EZNEW.ViewModel.CTask.Response;
+@using EZNEW.CTask;
+@using EZNEW.Framework.Extension;
+@using EZNEW.Framework.Serialize;
+@{
+    var serverStateValues = ServerStatus.运行.GetType().GetEnumValueAndNames();
+    var jobServerRunStateValues = JobServerStatus.启用.GetType().GetEnumValueAndNames();
+    var triggerTypeValues = TaskTriggerType.简单.GetType().GetEnumValueAndNames();
+    var triggerStatusValues = TaskTriggerStatus.停止.GetType().GetEnumValueAndNames();
+    var triggerApplyValues = TaskTriggerApplyTo.服务.GetType().GetEnumValueAndNames();
+}
+@model JobViewModel
+<environment>
+    <link href="~/style/css/table.css" rel="stylesheet" />
+    <link href="~/style/css/jquery.splitter.css" rel="stylesheet" />
+</environment>
+
+<div id="page-body">
+    <div id="page-body-inner">
+        <div class="split-horizontal-container" data-position="22%" data-splitlimit="180,50">
+            <div class="split-horizontal-top">
+                <table cellpadding="0" cellspacing="0" class="detail-table">
+                    <tr>
+                        <td class="detail-td-tit">名称</td>
+                        <td class="detail-td-content">@Model.Name</td>
+                        <td class="detail-td-tit">分组</td>
+                        <td class="detail-td-content">@Model.Group?.Name</td>
+                        <td class="detail-td-tit">状态</td>
+                        <td class="detail-td-content">@Model.Status</td>
+                    </tr>
+                    <tr>
+                        <td class="detail-td-tit">任务类型</td>
+                        <td class="detail-td-content">@Model.TypeName</td>
+                        <td class="detail-td-tit">执行方式</td>
+                        <td class="detail-td-content">@Model.RunType</td>
+                        <td class="detail-td-tit">说明</td>
+                        <td class="detail-td-content">@Model.Description</td>
+                    </tr>
+                    <tr>
+                        <td class="detail-td-tit">任务地址</td>
+                        <td class="detail-td-content" colspan="5">@Model.JobPath</td>
+                    </tr>
+                    <tr>
+                        <td class="detail-td-tit">启动文件</td>
+                        <td class="detail-td-content" colspan="5">@Model.JobFileName</td>
+                    </tr>
+                </table>
+            </div>
+            <div class="split-horizontal-bottom">
+                <div class="content-panel">
+                    <ul class="nav nav-tabs bd-tw-0 content-panel-head" id="myTab" role="tablist">
+                        <li class="nav-item">
+                            <a class="nav-link active" id="server_tab" data-toggle="tab" href="#server" role="tab" aria-controls="server" aria-selected="true">服务节点</a>
+                        </li>
+                        @if (Model.Type != JobApplicationType.远程任务)
+                        {
+                            <li class="nav-item">
+                                <a class="nav-link" id="jobfile_tab" data-toggle="tab" href="#jobfile" role="tab" aria-controls="jobfile" aria-selected="false">任务文件</a>
+                            </li>
+                        }
+                        <li class="nav-item">
+                            <a class="nav-link" id="trigger_tab" data-toggle="tab" href="#trigger" role="tab" aria-controls="trigger" aria-selected="false">执行计划</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" id="executejob_tab" data-toggle="tab" href="#executejob" role="tab" aria-controls="executejob" aria-selected="false">执行日志</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" id="errorjob_tab" data-toggle="tab" href="#errorjob" role="tab" aria-controls="errorjob" aria-selected="false">错误日志</a>
+                        </li>
+                    </ul>
+                    <div class="tab-content content-panel-body" id="myTabContent">
+                        <div class="tab-pane show active content-panel" id="server" role="tabpanel">
+                            <div class="content-panel-head pd-10 lis_search">
+                                <input type="text" class="form-control w-200" id="search_servername" placeholder="名称/地址">
+                                <button class="btn btn-info" type="button" id="searchbusiness_btn" onclick="LoadServers()"><i class="icon-search"></i> 搜索</button>
+                                <button type="button" id="btn_addserver" class="btn btn-primary"><i class="icon-plus"></i> 添加服务</button>
+                                <button type="button" id="btn_delselectserver" class="btn btn-danger"><i class="icon-trash"></i> 删除选中</button>
+                            </div>
+                            <div class="content-panel-body">
+                                <table class="datagrid-table wp-100" id="server_table" cellpadding="0" cellspacing="0"></table>
+                            </div>
+                            <div class="content-panel-foot" id="server_tabe_pager"></div>
+                        </div>
+                        @if (Model.Type != JobApplicationType.远程任务)
+                        {
+                            <div id="jobfile" class="tab-pane content-panel" role="tabpanel"></div>
+                        }
+                        <div class="tab-pane show active content-panel" id="trigger" role="tabpanel">
+                            <div class="content-panel-head pd-10 lis_search">
+                                <input type="text" class="form-control w-200" id="search_triggername" placeholder="名称">
+                                <button class="btn btn-info" type="button" id="searchtrigger_btn" onclick="LoadTriggers()"><i class="icon-search"></i> 搜索</button>
+                                <button type="button" id="btn_addtrigger" class="btn btn-primary"><i class="icon-plus"></i> 添加计划</button>
+                                <button type="button" id="btn_delselecttrigger" class="btn btn-danger"><i class="icon-trash"></i> 移除选中</button>
+                            </div>
+                            <div class="content-panel-body">
+                                <table class="datagrid-table wp-100" id="trigger_table" cellpadding="0" cellspacing="0"></table>
+                            </div>
+                            <div class="content-panel-foot" id="trigger_tabe_pager"></div>
+                        </div>
+                        <div class="tab-pane content-panel" id="executejob" role="tabpanel">
+                            <div class="content-panel-head pd-10 lis_search">
+                                <label class="col-form-label">开始时间</label><input type="text" id="search_execlogbegintime" placeholder="" readonly="readonly" class="form-control w-150 DateTime" />-<input type="text" id="search_execlogendtime" placeholder="" class="form-control w-150 DateTime" readonly="readonly" />
+                                <button class="btn btn-info" type="button" onclick="LoadExecLog()"><i class="icon-search"></i> 搜索</button>
+                            </div>
+                            <div class="content-panel-body">
+                                <table class="datagrid-table wp-100" id="exectlog_table" cellpadding="0" cellspacing="0"></table>
+                            </div>
+                            <div class="content-panel-foot" id="exectlog_tabe_pager"></div>
+                        </div>
+                        <div class="tab-pane content-panel" id="errorjob" role="tabpanel">
+                            <div class="content-panel-head pd-10 lis_search">
+                                <label class="col-form-label">开始时间</label><input type="text" id="search_errorlogbegintime" placeholder="" readonly="readonly" class="form-control w-150 DateTime" />-<input type="text" id="search_errorlogendtime" placeholder="" class="form-control w-150 DateTime" readonly="readonly" />
+                                <button class="btn btn-info" type="button" onclick="LoadErrorLog()"><i class="icon-search"></i> 搜索</button>
+                            </div>
+                            <div class="content-panel-body">
+                                <table class="datagrid-table wp-100" id="errorlog_table" cellpadding="0" cellspacing="0"></table>
+                            </div>
+                            <div class="content-panel-foot" id="errorlog_tabe_pager"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<div id="page-foot">
+    <div class="page-foot-btngroup">
+        <button class="btn btn-primary" id="btn_edit"><i class="icon-edit"></i> 编辑</button>
+        @if (Model.Status == JobStatus.运行中)
+        {
+            <button class="btn btn-warning" id="btn_disable"><i class="icon-eye-close"></i> 停止</button>
+        }
+        else
+        {
+            <button class="btn btn-success" id="btn_enable"><i class="icon-eye-open"></i> 运行</button>
+        }
+        <button class="btn btn-danger" id="btn_delete"><i class="icon-trash"></i> 删除</button>
+    </div>
+</div>
+@section Scripts{
+    <script src="~/scripts/table/jquery.dataTables.min.js"></script>
+    <script src="~/scripts/table/dataTables.fixedColumns.min.js"></script>
+    <script src="~/scripts/jq/jquery.splitter.js"></script>
+    <script src="~/scripts/datepicker/WdatePicker.js"></script>
+    <script type="text/javascript">
+        BodyScroll = false;
+        HasDivPageCon=true;
+        TabConentScroll=true;
+        var saveJobServerUrl = '@Url.Action("SaveJobServerHost","Task")';
+        var loadServerUrl = '@Url.Action("GetJobServerHostByJob","Task")';
+        var loadTriggerUrl='@Url.Action("GetJobTrigger","Task")';
+        var loadedTrigger=false;
+        var loadedExecLog=false;
+        var loadedErrorLog = false;
+        var loadedJobFile = false;
+        var serverStatusDict=new Object();
+        var jobServerRunStatusDict=new Object();
+        var triggerStatusDict=new Object();
+        var triggerApplyDict=new Object();
+        var triggerTypeDict=new Object();
+        $(function () {
+            serverStatusDict=JSON.parse('@Html.Raw(JsonSerialize.ObjectToJson(serverStateValues))');
+            jobServerRunStatusDict=JSON.parse('@Html.Raw(JsonSerialize.ObjectToJson(jobServerRunStateValues))');
+            triggerStatusDict=JSON.parse('@Html.Raw(JsonSerialize.ObjectToJson(triggerStatusValues))');
+            triggerApplyDict=JSON.parse('@Html.Raw(JsonSerialize.ObjectToJson(triggerApplyValues))');
+            triggerTypeDict=JSON.parse('@Html.Raw(JsonSerialize.ObjectToJson(triggerTypeValues))');
+            //服务列表
+            InitDataTable({
+                TableEle:'#server_table',
+                'columnDefs': [{
+                    "title": '<div class="checkbox-style cbx_all"></div>', "targets": 0,"data":function ( row, type, val, meta ) {
+                        return '<div class="checkbox-style cbx_val" data-val="' + row.Server.Id + '"></div>';
+                },width:'20px',className:'txt-center' },
+                { "title": "服务名称", "targets": 1,"data":'Server.Name',width:'150px' },
+                { "title": "服务状态", "targets": 2,"data":function ( row, type, val, meta ){
+                    return serverStatusDict[row.Server.Status];
+                },width:'100px',className:'txt-center' },
+                { "title": "调度状态", "targets": 3,"data":function ( row, type, val, meta ){
+                    return jobServerRunStatusDict[row.RunStatus];
+                },width:'100px',className:'txt-center' },
+                { "title": "服务地址", "targets": 4,"data":'Server.Host' },
+                { "title": "操作", "targets": 5,"data":function(row,type,val,meta){
+                    var menuItems=new Array();
+                    if(row.RunStatus==@((int)JobServerStatus.启用)){
+                        menuItems.push('<li><a href="javascript:void(0)" class="btn_serverdisable dropdown-item" serverno="_sysNo" servername="_serverName"><i class="icon-eye-close"></i> 停用</a></li>'.replace('_sysNo',row.Server.Id).replace('_serverName',row.Server.Name));
+                    }else{
+                        menuItems.push('<li><a href="javascript:void(0)" class="btn_serverenable dropdown-item" serverno="_sysNo" servername="_serverName"><i class="icon-eye-open"></i> 启用</a></li>'.replace('_sysNo',row.Server.Id).replace('_serverName',row.Server.Name));
+                    }
+                    menuItems.push('<li><a href="javascript:void(0)" class="btn_servertrigger dropdown-item" serverno="_sysNo" servername="_serverName"><i class="icon-time"></i> 调度计划</a></li>'.replace('_sysNo',row.Server.Id).replace('_serverName',row.Server.Name));
+                    menuItems.push('<li><a href="javascript:void(0)" class="btn_serverdelete dropdown-item" serverno="_sysNo" servername="_serverName"><i class="icon-trash"></i> 移除</a></li>'.replace('_sysNo',row.Server.Id).replace('_serverName',row.Server.Name));
+                    return '<div class="btn-group"><button type="button" class="btn btn-sm btn-primary dropdown-toggle w-80" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">管  理 <span class="caret"></span></button><ul class="dropdown-menu list-dropdown-menu w-80">'+menuItems.join('')+'</ul></div>';
+                },width:'80px',className:'txt-center'}
+                ],
+                callback: function () {
+                    LoadServers();
+                }
+        });
+                //执行计划
+                InitDataTable({
+                    TableEle:'#trigger_table',
+                    'columnDefs': [{
+                        "title": '<div class="checkbox-style cbx_all"></div>', "targets": 0,"data":function ( row, type, val, meta ) {
+                            return '<div class="checkbox-style cbx_val" data-val="' + row.Id + '"></div>';
+                    },width:'20px',className:'txt-center' },
+                    { "title": "计划名称", "targets": 1,"data":'Name'},
+                    { "title": "类型", "targets": 2,"data":function ( row, type, val, meta ){
+                        return triggerTypeDict[row.Type];
+                    },width:'100px',className:'txt-center' },
+                    { "title": "状态", "targets": 3,"data":function ( row, type, val, meta ){
+                        return triggerStatusDict[row.Status];
+                    },width:'100px',className:'txt-center' },
+                    { "title": "应用对象", "targets": 4,width:'100px',className:'txt-center',"data":function ( row, type, val, meta ){
+                        return triggerApplyDict[row.ApplyTo];
+                    } },
+                    { "title": "操作", "targets": 5,"data":function(row,type,val,meta){
+                        var menuItems=new Array();
+                        menuItems.push('<li><a href="javascript:void(0)" class="btn_triggerdetail dropdown-item" triggerno="_triggerNo" triggername="_triggerName"><i class="icon-list-alt"></i> 详情</a></li>'.replace('_triggerNo',row.Id).replace('_triggerName',row.Name));
+                        if(row.Status==@((int)TaskTriggerStatus.运行)){
+                            menuItems.push('<li><a href="javascript:void(0)" class="btn_triggerdisable dropdown-item" triggerno="_triggerNo" triggername="_triggerName"><i class="icon-eye-close"></i> 停用</a></li>'.replace('_triggerNo',row.Id).replace('_triggerName',row.Name));
+                    }else{
+                            menuItems.push('<li><a href="javascript:void(0)" class="btn_triggerenable dropdown-item" triggerno="_triggerNo" triggername="_triggerName"><i class="icon-eye-open"></i> 启用</a></li>'.replace('_triggerNo',row.Id).replace('_triggerName',row.Name));
+                }
+                        menuItems.push('<li><a href="javascript:void(0)" class="btn_triggerservers dropdown-item" triggerno="_triggerNo" triggername="_triggerName"><i class="icon-globe"></i> 承载服务</a></li>'.replace('_triggerNo',row.Id).replace('_triggerName',row.Name));
+                        menuItems.push('<li><a href="javascript:void(0)" class="btn_triggerdelete dropdown-item" triggerno="_triggerNo" triggername="_triggerName"><i class="icon-trash"></i> 移除</a></li>'.replace('_triggerNo',row.Id).replace('_triggerName',row.Name));
+                        return '<div class="btn-group"><button type="button" class="btn btn-primary dropdown-toggle w-80" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">管  理 <span class="caret"></span></button><ul class="dropdown-menu list-dropdown-menu w-80">'+menuItems.join('')+'</ul></div>';
+                },width:'80px',className:'txt-center'}
+                ]
+        });
+
+                //执行日志
+                InitDataTable({
+                    TableEle:'#exectlog_table',
+                    'columnDefs':[
+                    { "title": "服务节点", "targets": 0,width:'150px',"data":'Server.Name',},
+                    { "title": "执行计划", "targets": 1,width:'150px',"data":'Trigger.Name' },
+                    { "title": "开始时间", "targets": 2,className:'txt-center',width:'130px',"data":'BeginTime',render:function(data, type, row, meta){
+                        return  moment(data).format("YYYY-MM-DD HH:mm:ss");
+                    } },
+                    { "title": "结束时间", "targets": 3,className:'txt-center',width:'130px',"data":'EndTime',render:function(data, type, row, meta){
+                        return  moment(data).format("YYYY-MM-DD HH:mm:ss");
+                    } },
+                    { "title": "说明", "targets": 4,"data":'Message' }
+                ]
+                });
+
+                //错误日志
+                InitDataTable({
+                    TableEle:'#errorlog_table',
+                    'columnDefs':[
+                    { "title": "服务", "targets": 0,width:'150px',"data":'Server.Name',},
+                    { "title": "地址", "targets": 1,width:'200px',"data":'Server.Host' },
+                    { "title": "时间", "targets": 2,className:'txt-center',width:'130px',"data":'Date',render:function(data, type, row, meta){
+                        return  moment(data).format("YYYY-MM-DD HH:mm:ss");
+                    } },
+                    { "title": "错误消息", "targets": 3,"data":'Message' },
+                    { "title": "操作", "targets": 4,"data":function(row,type,val,meta){
+                        var menuItems=new Array();
+                        menuItems.push('<li><a href="javascript:void(0)" class="btn_errorlogdetail" errorno="_errorNo"><i class="glyphicon glyphicon-list-alt"></i> 详情</a></li>'.replace('_errorNo',row.Id));
+                        var menuString=menuItems.join('');
+                        return '<div class="btn-group"><button type="button" class="btn btn-blue dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">管理 <span class="caret"></span></button><ul class="dropdown-menu list-dropdown-menu w-62">'+menuString+'</ul></div>';
+                    },width:'62px',className:'txt-center' }
+                    ]
+            });
+
+            //任务文件
+            InitDataTable({
+                TableEle: '#jobfile_table',
+                'columnDefs': [
+                    { "title": "文件名", "targets": 0, width: '150px', "data": 'Server.Name', },
+                    { "title": "更新时间", "targets": 1, width: '200px', "data": 'Server.Host' },
+                    {
+                        "title": "说明", "targets": 2, className: 'txt-center', width: '130px', "data": 'Date', render: function (data, type, row, meta) {
+                            return moment(data).format("YYYY-MM-DD HH:mm:ss");
+                        }
+                    },
+                    {
+                        "title": "操作", "targets": 3, "data": function (row, type, val, meta) {
+                            var menuItems = new Array();
+                            menuItems.push('<li><a href="javascript:void(0)" class="btn_errorlogdetail" errorno="_errorNo"><i class="glyphicon glyphicon-list-alt"></i> 应用到所有</a></li>'.replace('_errorNo', row.Id));
+                            menuItems.push('<li><a href="javascript:void(0)" class="btn_errorlogdetail" errorno="_errorNo"><i class="glyphicon glyphicon-list-alt"></i> 应用到服务</a></li>'.replace('_errorNo', row.Id));
+                            var menuString = menuItems.join('');
+                            return '<div class="btn-group"><button type="button" class="btn btn-sm btn-primary dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">操作 <span class="caret"></span></button><ul class="dropdown-menu list-dropdown-menu w-62">' + menuString + '</ul></div>';
+                        }, width: '62px', className: 'txt-center'
+                    }
+                ]
+            });
+            //编辑
+            $("#btn_edit").click(function () {
+                window.top.RedirectCurrentPage('@Url.Action("EditJob", "Task",new { id=Model.Id})', '编辑任务【@Model.Name】');
+            });
+            //添加服务
+            $("#btn_addserver").click(function () {
+                OpenDialogPage({
+                    url: '@Url.Action("ServerNodeMultipleSelect", "Task")',
+                    width: "600px",
+                    height: "400px",
+                    title: '选择服务节点'
+                });
+            });
+            //停用服务
+            $("body").on("click", ".btn_serverdisable", function () {
+                var serverNo = $.trim($(this).attr("serverno"));
+                if (serverNo == "") {
+                    return;
+                }
+                var serverName = $.trim($(this).attr("servername"));
+                ModifyServerRunState(serverNo,serverName,@((int)JobServerStatus.停用));
+            });
+            //启用服务
+            $("body").on("click", ".btn_serverenable", function () {
+                var serverNo = $.trim($(this).attr("serverno"));
+                if (serverNo == "") {
+                    return;
+                }
+                var serverName = $.trim($(this).attr("servername"));
+                ModifyServerRunState(serverNo,serverName,@((int)JobServerStatus.启用));
+            });
+            //移除服务
+            $("body").on("click",".btn_serverdelete",function(){
+                var serverNo = $.trim($(this).attr("serverno"));
+                if (serverNo == "") {
+                    return;
+                }
+                var serverName = $.trim($(this).attr("servername"));
+                RemoveJobServer([serverNo],serverName);
+            });
+            //移除选中服务
+            $("#btn_delselectserver").click(function(){
+                var serverNos=GetSelectServers();
+                RemoveJobServer(serverNos,'');
+            });
+
+            //添加执行计划
+            $("#btn_addtrigger").click(function(){
+                window.top.OpenPage({
+                    url: '@Url.Action("EditTrigger","Task",new {Job_Id=Model.Id})'.replace('Job_Id', 'Job.Id'),
+                    title:'添加执行计划'
+                });
+            });
+
+            //执行计划服务标签
+            $("body").on('click','#trigger_tab',function(){
+                if(!loadedTrigger){
+                    LoadTriggers();
+                }
+            });
+            //计划详情
+            $("body").on('click','.btn_triggerdetail',function(){
+                var triggerId=$.trim($(this).attr("triggerno"));
+                if(triggerId==''){
+                    return;
+                }
+                window.top.OpenPage({
+                    url: '@Url.Action("TriggerDetail", "Task",new {id="_id"})'.replace('_id', triggerId),
+                    title:'执行计划详情'
+                });
+            });
+            //删除计划
+            $("body").on('click','.btn_triggerdelete',function(){
+                var triggerId=$.trim($(this).attr("triggerno"));
+                var triggerIds=new Array();
+                triggerIds.push(triggerId);
+                var triggerName=$.trim($(this).attr("triggername"));
+                RemoveTrigger(triggerIds,triggerName);
+            });
+
+            //删除选中计划
+            $('#btn_delselecttrigger').click(function(){
+                var triggerIds=GetSelectTriggers();
+                RemoveTrigger(triggerIds,'');
+            });
+            //开启任务
+            $("body").on("click","#btn_enable",function(){
+                ModifyJobRunState(true);
+            });
+            //关闭任务
+            $("body").on("click","#btn_disable",function(){
+                ModifyJobRunState(false);
+            });
+            //删除任务
+            $("#btn_delete").click(function(){
+                DeleteJob(false);
+            });
+            //查看调度计划
+            $("body").on('click','.btn_servertrigger',function(){
+                var serverNo = $.trim($(this).attr("serverno"));
+                if (serverNo == "") {
+                    return;
+                }
+                var serverName = $.trim($(this).attr("servername"));
+                OpenDialogPage({
+                    url: '@Html.Raw(Url.Action("ServerScheduleTriggerList", "Task",new { serverCode ="_serid", jobId=Model.Id}))'.replace('_serid',serverNo),
+                    width: "600px",
+                    height: "400px",
+                    title: '服务节点【'+serverName+'】的调度计划',
+                    ok: false
+                });
+            });
+            //查看计划承载服务
+            $("body").on('click','.btn_triggerservers',function(){
+                var triggerId=$.trim($(this).attr("triggerno"));
+                var triggerName=$.trim($(this).attr("triggername"));
+                OpenDialogPage({
+                    url: '@Html.Raw(Url.Action("TriggerHostServerList", "Task",new { triggerId = "_tid"}))'.replace('_tid',triggerId),
+                    width: "600px",
+                    height: "400px",
+                    title: '执行计划【'+triggerName+'】承载服务',
+                    ok: false,
+                    cancel: null
+                });
+            });
+
+            //执行日志标签
+            $("body").on('click','#tab_link_exectlog',function(){
+                if(!loadedExecLog){
+                    LoadExecLog();
+                }
+            });
+            //停用计划
+            $("body").on('click','.btn_triggerdisable',function(res){
+                var triggerNo=$(this).attr('triggerno');
+                if(triggerNo==''){
+                    return;
+                }
+                ModifyTriggerRunState(false,triggerNo);
+            });
+            //启用计划
+            $("body").on('click','.btn_triggerenable',function(res){
+                var triggerNo=$(this).attr('triggerno');
+                if(triggerNo==''){
+                    return;
+                }
+                ModifyTriggerRunState(true,triggerNo);
+            });
+            //错误日志标签
+            $("body").on('click','#tab_link_errorlog',function(){
+                if(!loadedErrorLog){
+                    LoadErrorLog();
+                }
+            });
+            //错误日志详情
+            $("body").on('click','.btn_errorlogdetail',function(){
+                var errorNo=$.trim($(this).attr("errorno"));
+                if(errorNo==""){
+                    return;
+                }
+                OpenDialogPage({
+                    url: '@Html.Raw(Url.Action("ErrorLogDetail", "Task",new { id = "_eid" }))'.replace('_eid',errorNo),
+                    width: "600px",
+                    height: "400px",
+                    title: '错误详情',
+                    ok: false,
+                    cancel: null
+                });
+            });
+
+            //工作文件标签
+            $("body").on('click', '#tab_link_jobfile', function () {
+                if (!loadedJobFile) {
+                    LoadJobFile();
+                }
+            });
+            //btn_selectjobfile
+            $("#btn_addjobfile").click(function () {
+                $("#btn_selectjobfile div label").click();
+            });
+        });
+
+        //修改执行计划状态
+        function ModifyTriggerRunState(state,triggerId){
+            var tipMsg=state?'计划开启后将会在服务上开始调度执行,确认开启吗?':"计划关闭后将会停止所有调度服务上的执行,确认关闭吗?";
+            var data=[{Id:triggerId,Status:(state?'@((int)TaskTriggerStatus.运行)':'@((int)TaskTriggerStatus.停止)')}];
+            ConfirmMsg(tipMsg, function () {
+                $.post('@Url.Action("ModifyTriggerState", "Task")', { triggers:data }, function (res) {
+                    ResultMsg(res);
+                    if (res.Success) {
+                        LoadTriggers();
+                    }
+                });
+            });
+        }
+
+        //获取选中的计划
+        function GetSelectTriggers(){
+            return GetDataTableCheckedValues('#trigger_table');
+        }
+
+        //获取选中的服务
+        function GetSelectServers() {
+            return GetDataTableCheckedValues('#server_table');
+        }
+
+        //选择回调
+        function ServerNodeMultiSelectCallback(servers) {
+            if (!servers) {
+                return;
+            }
+            var serverHosts = new Array();
+            for (var s in servers) {
+                var nowServer = servers[s];
+                serverHosts.push({
+                    Server: {
+                        Id: nowServer.Id
+                    },
+                    Job: {
+                        Id: '@Model.Id'
+                    }
+                });
+            }
+            $.post(saveJobServerUrl, { serverHosts: serverHosts }, function (res) {
+                ResultMsg(res);
+                if (res.Success) {
+                    LoadServers();
+                }
+            });
+        }
+
+        //加载服务
+        function LoadServers() {
+            var serverKey = $.trim($("#search_servername").val());
+            var jobIds = new Array();
+            jobIds.push('@Model.Id');
+            var data = {
+                ServerKey: serverKey,
+                Jobs: jobIds
+            };
+            PageSearch({
+                url: loadServerUrl,
+                data: data,
+                listEle: "#server_table",
+                pagerEle: "#server_tabe_pager",
+                callback: function () {
+                }
+            });
+        }
+
+        //修改服务承载运行状态
+        function ModifyServerRunState(serverId, serverName, state) {
+            if (!serverId || serverId == "") {
+                return;
+            }
+            var enableState=state==@((int)JobServerStatus.启用);
+            var tipMsg = enableState?'启用后任务将会在该服务上调度执行,确认在服务【'+serverName+'】上启用该任务吗?':'停用后任务将会在该服务上停止执行,确认在服务【'+serverName+'】上停用该任务吗?';
+            var jobServerHosts=new Array();
+            jobServerHosts.push({
+                Server:{
+                    Id:serverId
+                },
+                Job:{
+                    Id:'@Model.Id'
+                },
+                RunStatus:state
+            });
+            ConfirmMsg(tipMsg, function () {
+                $.post('@Url.Action("ModifyJobServerHostRunState","Task")', { serverHosts: jobServerHosts }, function (res) {
+                    ResultMsg(res);
+                    if (res.Success) {
+                        LoadServers();
+                    }
+                });
+            });
+        }
+
+        //移除承载服务
+        function RemoveJobServer(serverIdArray,serverName){
+            if(!serverIdArray||serverIdArray.length<=0){
+                return;
+            }
+            var serverHosts=new Array();
+            for(var s in serverIdArray)
+            {
+                serverHosts.push({
+                    Server:{
+                        Id:serverIdArray[s]
+                    },
+                    Job:{
+                        Id:'@Model.Id'
+                    }
+                });
+            }
+            var tipMsg=serverIdArray.length==1&&serverName!=""?'移除服务后将停止任务在该服务上的执行,确认移除服务【'+serverName+'】吗?':"移除服务后将停止任务在该服务上的执行,确认移除吗?";
+            ConfirmMsg(tipMsg, function () {
+                $.post('@Url.Action("DeleteJobServerHost", "Task")', { serverHosts: serverHosts }, function (res) {
+                    ResultMsg(res);
+                    if (res.Success) {
+                        LoadServers();
+                    }
+                });
+            });
+        }
+
+        //获取执行计划
+        function LoadTriggers(){
+            var triggerName = $.trim($("#search_triggername").val());
+            var data = {
+                Name: triggerName,
+                Job: '@Model.Id'
+            };
+            PageSearch({
+                url: loadTriggerUrl,
+                data: data,
+                listEle: "#trigger_table",
+                pagerEle: "#trigger_tabe_pager",
+                callback: function () {
+                    loadedTrigger=true;
+                }
+            });
+        }
+
+        //移除执行计划
+        function RemoveTrigger(ids,name){
+            var tipMsg=name!=""?'移除后将不能恢复该调度计划,确认移除执行计划【'+name+'】吗?':"移除后将不能恢复,确认移除吗?";
+            ConfirmMsg(tipMsg, function () {
+                $.post('@Url.Action("RemoveTrigger", "Task")', { triggerIds: ids }, function (res) {
+                    ResultMsg(res);
+                    if (res.Success) {
+                        LoadTriggers();
+                    }
+                });
+            });
+        }
+        //修改任务运行状态
+        function ModifyJobRunState(state){
+            var tipMsg=state?'任务启动后将会在服务上开始调度执行,确认开启吗?':"任务关闭后将会停止所有调度服务上的执行,确认关闭吗?";
+            var data={Id:'@Model.Id',Status:(state?'@((int)JobStatus.运行中)':'@((int)JobStatus.停止)')};
+            ConfirmMsg(tipMsg, function () {
+                $.post('@Url.Action("ModifyJobRunState", "Task")', { job:data }, function (res) {
+                    ResultMsg(res);
+                    if (res.Success) {
+                        window.top.RefreshCurrentPage();
+                    }
+                });
+            });
+        }
+
+        //删除工作任务
+        function DeleteJob(){
+            ConfirmMsg('删除后将不能恢复,确认删除该工作任务吗?', function () {
+                var ids=['@Model.Id'];
+                $.post('@Url.Action("DeleteJob", "Task")', { jobIds:ids }, function (res) {
+                    ResultMsg(res);
+                    if (res.Success) {
+                        window.top.CloseCurrentPage();
+                    }
+                });
+            });
+        }
+
+        //加载任务执行日志
+        function LoadExecLog(){
+            var beginTime=$.trim($("#search_execlogbegintime").val());
+            var endTime=$.trim($("#search_execlogendtime").val());
+            var data={
+                Job:'@Model.Id',
+                BeginTime:beginTime,
+                EndTime:endTime
+            };
+            PageSearch({
+                url: '@Url.Action("SearchJobExecuteLog", "Task")',
+                data: data,
+                listEle: "#exectlog_table",
+                pagerEle: "#exectlog_tabe_pager",
+                callback: function () {
+                    loadedExecLog=true;
+                }
+            });
+        }
+
+        //加载任务错误日志
+        function LoadErrorLog(){
+            var beginTime=$.trim($("#search_errorlogbegintime").val());
+            var endTime=$.trim($("#search_errorlogendtime").val());
+            var data={
+                Job:'@Model.Id',
+                BeginDate:beginTime,
+                EndDate:endTime
+            };
+            PageSearch({
+                url: '@Url.Action("SearchJobErrorLog", "Task")',
+                data: data,
+                listEle: "#errorlog_table",
+                pagerEle: "#errorlog_tabe_pager",
+                callback: function () {
+                    loadedErrorLog=true;
+                }
+            });
+        }
+
+        //加载工作文件
+        function LoadJobFile() {
+            var data={
+                Job:'@Model.Id'
+            };
+            PageSearch({
+                url: '@Url.Action("SearchJobFile", "Task")',
+                data: data,
+                listEle: "#jobfile_table",
+                pagerEle: "#jobfile_tabe_pager",
+                callback: function () {
+                    loadedErrorLog=true;
+                }
+            });
+        }
+    </script>
+}
+
+
+
+

@@ -1,0 +1,12 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netstandard2.0</TargetFramework>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\Infrastructure\Contract\BusinessContract\EZNEW.BusinessContract.CTask\EZNEW.BusinessContract.CTask.csproj" />
+    <ProjectReference Include="..\..\Domain\EZNEW.Domain.Task\EZNEW.Domain.CTask.csproj" />
+  </ItemGroup>
+
+</Project>

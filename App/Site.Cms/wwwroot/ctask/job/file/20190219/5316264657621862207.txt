@@ -1,0 +1,148 @@
+USE [BJR-WMS-V1803]
+GO
+
+INSERT INTO [dbo].[Sys_Auth]
+           ([SysNo]
+           ,[AuthDesc]
+           ,[AuthCode]
+           ,[Status]
+           ,[AuthGroupSysNo]
+           ,[AuthType]
+           ,[FunGroup]
+           ,[FunGroupSortIndex]
+           ,[SortIndex]
+           ,[FunGroupName])
+     VALUES
+           (NEWID(),
+           '查看业务收款单'
+           ,'RCBV20001'
+           ,610
+           ,'E5181961-F45D-4E6A-91FC-5503A2C1BE32'
+           ,510
+           ,0
+           ,0
+           ,0
+           ,'')
+GO
+
+
+INSERT INTO [dbo].[Sys_Auth]
+           ([SysNo]
+           ,[AuthDesc]
+           ,[AuthCode]
+           ,[Status]
+           ,[AuthGroupSysNo]
+           ,[AuthType]
+           ,[FunGroup]
+           ,[FunGroupSortIndex]
+           ,[SortIndex]
+           ,[FunGroupName])
+     VALUES
+           (NEWID(),
+           '添加/编辑业务收款单'
+           ,'RCBV20002'
+           ,610
+           ,'E5181961-F45D-4E6A-91FC-5503A2C1BE32'
+           ,510
+           ,0
+           ,0
+           ,0
+           ,'')
+GO
+
+INSERT INTO [dbo].[Sys_Auth]
+           ([SysNo]
+           ,[AuthDesc]
+           ,[AuthCode]
+           ,[Status]
+           ,[AuthGroupSysNo]
+           ,[AuthType]
+           ,[FunGroup]
+           ,[FunGroupSortIndex]
+           ,[SortIndex]
+           ,[FunGroupName])
+     VALUES
+           (NEWID(),
+           '收款单审核'
+           ,'RCBV20003'
+           ,610
+           ,'E5181961-F45D-4E6A-91FC-5503A2C1BE32'
+           ,510
+           ,0
+           ,0
+           ,0
+           ,'')
+GO
+
+
+INSERT INTO [dbo].[Sys_Auth]
+           ([SysNo]
+           ,[AuthDesc]
+           ,[AuthCode]
+           ,[Status]
+           ,[AuthGroupSysNo]
+           ,[AuthType]
+           ,[FunGroup]
+           ,[FunGroupSortIndex]
+           ,[SortIndex]
+           ,[FunGroupName])
+     VALUES
+           (NEWID(),
+           '查看款项变更单'
+           ,'PCBV20001'
+           ,610
+           ,'E5181961-F45D-4E6A-91FC-5503A2C1BE32'
+           ,510
+           ,0
+           ,0
+           ,0
+           ,'')
+GO
+
+INSERT INTO [dbo].[Sys_Auth]
+           ([SysNo]
+           ,[AuthDesc]
+           ,[AuthCode]
+           ,[Status]
+           ,[AuthGroupSysNo]
+           ,[AuthType]
+           ,[FunGroup]
+           ,[FunGroupSortIndex]
+           ,[SortIndex]
+           ,[FunGroupName])
+     VALUES
+           (NEWID(),
+           '添加/编辑款项变更单'
+           ,'PCBV20002'
+           ,610
+           ,'E5181961-F45D-4E6A-91FC-5503A2C1BE32'
+           ,510
+           ,0
+           ,0
+           ,0
+           ,'')
+GO
+
+INSERT INTO [dbo].[Sys_Auth]
+           ([SysNo]
+           ,[AuthDesc]
+           ,[AuthCode]
+           ,[Status]
+           ,[AuthGroupSysNo]
+           ,[AuthType]
+           ,[FunGroup]
+           ,[FunGroupSortIndex]
+           ,[SortIndex]
+           ,[FunGroupName])
+     VALUES
+           (NEWID(),
+           '款项变更单审核'
+           ,'PCBV20003'
+           ,610
+           ,'E5181961-F45D-4E6A-91FC-5503A2C1BE32'
+           ,510
+           ,0
+           ,0
+           ,0
+           ,'')
+GO

@@ -1,0 +1,105 @@
+﻿
+@{
+    ViewBag.Title = "编辑服务节点";
+}
+@using EZNEW.Web.Utility;
+@using EZNEW.ViewModel.CTask.Request
+@using EZNEW.Framework.Extension
+@using EZNEW.CTask
+@model EditServerNodeViewModel
+
+<div id="page-body">
+    <div id="page-body-inner" class="pdt-10">
+        @using (Html.AjaxBeginForm("EditServerNode", "CTask", new AjaxFormOptions() { HttpMethod = "Post", OnSuccess = "ServerNodeSuccessCallback", OnFailure = "ServerNodeFailedCallback" }, new { id = "defaultform" }))
+        {
+            @Html.Hidden("Id", null, new { id = "Id" })
+            @*<div class="form-group">
+                <label class="col-form-label">@Html.LabelFor(c => c.InstanceName)</label>
+                <div class="d-inline-block w-200">
+                    @Html.TextBoxFor(a => a.InstanceName, new { @class = "form-control w-200" })
+                </div>
+                <div class="d-inline-block">@Html.DefaultValidationMessageFor(c => c.InstanceName, "", new { @class = "form-validate-msg" })</div>
+            </div>*@
+            <div class="form-group">
+                <label class="col-form-label">@Html.LabelFor(c => c.Name)</label>
+                <div class="d-inline-block w-200">
+                    @Html.TextBoxFor(a => a.Name, new { @class = "form-control w-200" })
+                </div>
+                <div class="d-inline-block">@Html.DefaultValidationMessageFor(c => c.Name, "", new { @class = "form-validate-msg" })</div>
+            </div>
+            <div class="form-group">
+                <label class="col-form-label">@Html.LabelFor(c => c.Status)</label>
+                <div class="d-inline-block w-200">
+                    @Html.EnumToSelect(a => a.Status, ServerStatus.运行, new { @class = "custom-select w-200" }, selectedValue: Model?.Status)
+                </div>
+                <div class="d-inline-block">@Html.DefaultValidationMessageFor(c => c.Status, "", new { @class = "form-validate-msg" })</div>
+            </div>
+            <div class="form-group">
+                <label class="col-form-label">@Html.LabelFor(c => c.Host)</label>
+                <div class="d-inline-block w-200">
+                    @Html.TextBoxFor(a => a.Host, new { @class = "form-control w-400" })
+                </div>
+                <div class="d-inline-block">@Html.DefaultValidationMessageFor(c => c.Host, "", new { @class = "form-validate-msg" })</div>
+            </div>
+            @*<div class="form-group">
+                <label class="col-form-label">@Html.LabelFor(c => c.ThreadCount)</label>
+                <div class="d-inline-block w-200">
+                    @Html.TextBoxFor(a => a.ThreadCount, new { @class = "form-control w-200" })
+                </div>
+                <div class="d-inline-block">@Html.DefaultValidationMessageFor(c => c.ThreadCount, "", new { @class = "form-validate-msg" })</div>
+            </div>
+            <div class="form-group">
+                <label class="col-form-label">@Html.LabelFor(c => c.ThreadPriority)</label>
+                <div class="d-inline-block w-200">
+                    @Html.TextBoxFor(a => a.ThreadPriority, new { @class = "form-control w-200" })
+                </div>
+                <div class="d-inline-block">@Html.DefaultValidationMessageFor(c => c.ThreadPriority, "", new { @class = "form-validate-msg" })</div>
+            </div>*@
+            <div class="form-group">
+                <label class="col-form-label">@Html.LabelFor(c => c.Description)</label>
+                <div class="d-inline-block w-200">
+                    @Html.TextAreaFor(a => a.Description, new { @class = "form-control w-400" })
+                </div>
+                <div class="d-inline-block">@Html.DefaultValidationMessageFor(c => c.Description, "", new { @class = "form-validate-msg" })</div>
+            </div>
+
+        }
+    </div>
+</div>
+<div id="page-foot">
+    <div class="page-foot-btngroup">
+        <button class="btn btn-primary" id="btn_submit"><i class="icon-save"></i> 提交</button>
+    </div>
+</div>
+@section Scripts{
+    <script type="text/javascript">
+        var detailUrl = '@Url.Action("ServerNodeDetail","Task",new { id="_id"})';
+        $(function () {
+            $("#btn_submit").click(function () {
+                SubmitForm();
+            });
+            BindEnterEvent(SubmitForm);
+        });
+
+        //提交表单
+        function SubmitForm() {
+            $("#defaultform").submit();
+        }
+
+        //成功回调
+        function ServerNodeSuccessCallback(res) {
+            if (!res) {
+                return;
+            }
+            ResultMsg(res);
+            if (res.Success) {
+                window.top.RedirectCurrentPage(detailUrl.replace('_id', res.Data.Id), '服务节点详情');
+            }
+        }
+
+        //失败回掉
+        function ServerNodeFailedCallback() {
+            ErrorMsg('提交失败');
+        }
+    </script>
+}

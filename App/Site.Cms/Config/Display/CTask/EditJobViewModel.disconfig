@@ -1,0 +1,69 @@
+﻿{
+    "types": [
+        {
+            "typeName": "EZNEW.ViewModel.CTask.Request.EditJobViewModel,EZNEW.ViewModel.CTask, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
+            "displays": [
+                {
+                    "name": "Description",
+                    "display": {
+                        "displayTxt": "描述"
+                    }
+                },
+                {
+                    "name": "Group",
+                    "display": {
+                        "displayTxt": "任务分组"
+                    }
+                },
+                {
+                    "name": "Id",
+                    "display": {
+                        "displayTxt": "编号"
+                    }
+                },
+                {
+                    "name": "JobFileName",
+                    "display": {
+                        "displayTxt": "启动文件"
+                    }
+                },
+                {
+                    "name": "JobPath",
+                    "display": {
+                        "displayTxt": "任务路径"
+                    }
+                },
+                {
+                    "name": "Name",
+                    "display": {
+                        "displayTxt": "名称"
+                    }
+                },
+                {
+                    "name": "RunType",
+                    "display": {
+                        "displayTxt": "运行类型"
+                    }
+                },
+                {
+                    "name": "Status",
+                    "display": {
+                        "displayTxt": "状态"
+                    }
+                },
+                {
+                    "name": "Type",
+                    "display": {
+                        "displayTxt": "类型"
+                    }
+                },
+                {
+                    "name": "UpdateDate",
+                    "display": {
+                        "displayTxt": "修改时间"
+                    }
+                }
+            ]
+        }
+    ]
+}

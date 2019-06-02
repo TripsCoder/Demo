@@ -1,0 +1,177 @@
+﻿
+@{
+    ViewData["Title"] = "选择工作分组";
+}
+<environment>
+    <link href="~/scripts/ztree/skin.css" rel="stylesheet" />
+</environment>
+<div id="page-body">
+    <div id="page-body-inner">
+        <ul id="all_tree" class="ztree"></ul>
+    </div>
+</div>
+
+@section Scripts
+    {
+    <environment>
+        <script src="~/scripts/ztree/jquery.ztree.all.js"></script>
+        <script src="~/scripts/ztree/jquery.ztree.exhide.js"></script>
+    </environment>
+    <script type="text/javascript">
+        var loadingIcoUrl = '/Content/Scripts/ztree/img/loading.gif';
+        var seetings = {
+            view: {
+                nameIsHTML: true,
+            },
+            callback: {
+                onClick: AllJobGroupNodeClick,
+                beforeExpand: BeforeExpand
+            },
+            check: {
+                enable: false,
+            },
+            edit: {
+                enable: true,
+                showRemoveBtn: false,
+                showRenameBtn: false
+            }
+        };
+        var allNodes = [];
+        var allJobGroups = {};
+        var allJobGroupsObj = new Object();
+        var roleNames = '';
+        var selectJobGroup = new Array();
+        var hideJobGroups = new Array();
+        var initSelectJobGroups = new Array();
+        $(function () {
+            InitData();
+            if (parent.RemoveJobGroups) {
+                hideJobGroups = parent.RemoveJobGroups();
+            }
+            if (parent.SelectJobGroups) {
+                initSelectJobGroups = parent.SelectJobGroups();
+            }
+        });
+
+        //隐藏节点
+        function HideNodes(hideJobGroups) {
+            if (!hideJobGroups) {
+                return;
+            }
+            var treeObj = $.fn.zTree.getZTreeObj("all_tree");
+            var hideParentNodes = new Object();
+            for (var ha in hideJobGroups) {
+                var nowHaCode = hideJobGroups[ha];
+                var nodes = treeObj.getNodesByParam("id", nowHaCode);
+                for (var n in nodes) {
+                    var nowNode = nodes[n];
+                    var parentNode = nowNode.getParentNode();
+                    treeObj.hideNode(nowNode);
+                    if (parentNode != null) {
+                        hideParentNodes[parentNode.id] = parentNode;
+                        parentNode.halfCheck = true;
+                    }
+                }
+            }
+            for (var pn in hideParentNodes) {
+                var pnode = hideParentNodes[pn];
+                do {
+                    var checkStatus = pnode.getCheckStatus();
+                    if (checkStatus && !checkStatus.half) {
+                        pnode.halfCheck = true;
+                    }
+                    var childNodes = pnode.children;
+                    var hide = true;
+                    for (var pcn in childNodes) {
+                        var pchnode = childNodes[pcn];
+                        hide = hide && pchnode.isHidden;
+                        if (!hide) {
+                            break;
+                        }
+                    }
+                    if (hide) {
+                        treeObj.hideNode(pnode);
+                    }
+                    pnode = pnode.getParentNode();
+                } while (pnode != null);
+            }
+        }
+
+        //选择节点
+        function SelectNodes(selectedJobGroups) {
+            if (!selectedJobGroups) {
+                return;
+            }
+            for (var sa in selectedJobGroups) {
+                var nowSelectCode = initSelectJobGroups[sa];
+                var nodes = treeObj.getNodesByParam("id", nowSelectCode);
+                for (var n in nodes) {
+                    var nowNode = nodes[n];
+                    treeObj.checkNode(nowNode, true, true, true);
+                }
+            }
+        }
+
+        //初始化数据
+        function InitData() {
+            $.post('@Url.Action("GetJobGroupValue", "Task")', function (res) {
+                if (!res) {
+                    return;
+                }
+                if (res.AllJobGroup) {
+                    allJobGroups = JSON.parse(res.AllJobGroup);
+                    for (var r in allJobGroups) {
+                        allJobGroupsObj[r] = allJobGroups[r];
+                    }
+                }
+                if (res.AllNodes) {
+                    allNodes = JSON.parse(res.AllNodes);
+                    InitAllJobGroupTree();
+                    HideNodes(hideJobGroups);
+                    SelectNodes(initSelectJobGroups);
+                }
+            });
+        }
+
+        //初始化树控件
+        function InitAllJobGroupTree() {
+            $.fn.zTree.init($("#all_tree"), seetings, allNodes);
+        }
+
+        //节点点击
+        function AllJobGroupNodeClick(event, treeId, treeNode) {
+            var nowJobGroup = allJobGroupsObj[treeNode.id];
+            if(!nowJobGroup){
+                return;
+            }
+            DialogOpener().JobGroupSingleSelectCallback(nowJobGroup);
+            CloseCurrentDialogPage();
+        }
+
+        //展开加载数据
+        function BeforeExpand(treeId, treeNode) {
+            if (!treeNode || treeNode.loadData) {
+                return true;
+            }
+            var zTree = $.fn.zTree.getZTreeObj(treeId);
+            treeNode.icon = loadingIcoUrl;
+            zTree.updateNode(treeNode);
+            $.post('@Url.Action("LoadChildJobGroups","Task")', { parentId: treeNode.id }, function (res) {
+                if (!res) {
+                    return;
+                }
+                var childNodes = JSON.parse(res.ChildNodes);
+                zTree.addNodes(treeNode, -1, childNodes);
+                treeNode.loadData = true;
+                treeNode.icon = "";
+                zTree.updateNode(treeNode);
+                zTree.expandNode(treeNode, true);
+                var childJobGroups = JSON.parse(res.JobGroupData);
+                for (var c in childJobGroups) {
+                    allJobGroupsObj[c] = childJobGroups[c];
+                }
+            });
+            return false;
+        }
+    </script>
+}

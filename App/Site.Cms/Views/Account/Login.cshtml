@@ -1,0 +1,109 @@
+
+@{
+    Layout = null;
+}
+@using EZNEW.Web.Mvc
+@using EZNEW.ViewModel.Sys.Request
+@model LoginViewModel
+<!DOCTYPE html>
+
+<html>
+<head>
+    <meta name="viewport" content="width=device-width" />
+    <title>管理登陆</title>
+    <environment>
+        
+        <link href="~/style/css/font-awesome.min.css" rel="stylesheet" />
+        <link href="~/style/css/login.css" rel="stylesheet" />
+
+        <script src="~/scripts/jq/jquery.min.js"></script>
+        <script src="~/scripts/jq/jquery.validate.js"></script>
+        <script src="~/scripts/jq/jquery.validate.unobtrusive.js"></script>
+        <script src="~/scripts/jq/jquery.unobtrusive-ajax.js"></script>
+        <script src="~/scripts/login.js"></script>
+    </environment>
+</head>
+<body>
+    <div id="login-container">
+
+        <div id="login-log">
+            <img src="style/images/login_title.png" />
+        </div>
+        <div id="login-form">
+            @using (Html.AjaxBeginForm("Login", "Account", new AjaxFormOptions() { OnSuccess = "LoginSuccess", OnBegin = "LoginBegin", HttpMethod = "Post" }, new { id = "loginform" }))
+            {
+                <div class="login-input-item">
+                    <div class="error_msg" id="log_error_msg"></div>
+                </div>
+                <div class="login-input-item">
+                    <div class="login-input">
+                        <i class="input-ico icon-user"></i>
+                        @Html.TextBoxFor(c => c.LoginName, new { placeholder = "用户名" })
+                    </div>
+                </div>
+                <div class="login-input-item">
+                    <div class="login-input">
+                        <i class="input-ico icon-lock"></i>
+                        @Html.PasswordFor(c => c.Pwd, new { placeholder = "密码" })
+                    </div>
+                </div>
+                <div class="login-input-item">
+                    <button type="button" class="login-btn" id="loginbtn">登陆</button>
+                </div>
+            }
+        </div>
+    </div>
+
+    <script type="text/javascript">
+        window.onload = function () {
+            if (!window.applicationCache) {
+                window.location.href = "@Url.Action("Browser","Home")";
+            }
+        }
+        //var imgUrl = '@Url.Action("VCode","Home")';
+        var homeUrl = '@Url.Action("Index","Home")';
+        $(function () {
+            if (self != top) {
+                top.location.href = "@Url.Action("Login","Account")";
+            }
+            $("#log_vcodeimg,#reg_vcodeimg").click(function () {
+                $(this).attr("src", imgUrl + "?k=" + Math.random());
+            });
+            $("#loginbtn").click(function () {
+                $("#loginform").submit();
+            });
+
+            $(window).keydown(function (e) {
+                if (e.keyCode == 13) {
+                    $("#loginform").submit();
+                }
+            });
+            //$("#log_vcodeimg").click();
+        });
+
+        function ValidError(error, input) {
+            input.addClass("error");
+            $("#log_error_msg").html(error.html());
+        }
+        function ValidSuccess(error, input) {
+            $(input).removeClass("error");
+            $("#log_error_msg").html("");
+        }
+        function LoginBegin() {
+            var loginBtn = $("#loginbtn");
+            loginBtn.attr("disabled", "disabled").html("登录中...");
+        }
+        function LoginSuccess(res) {
+            var loginBtn = $("#loginbtn");
+            if (res.Success) {
+                loginBtn.html("登录成功");
+                window.location.href = homeUrl;
+            } else {
+                //$("#log_vcodeimg").click();
+                loginBtn.html("登录").removeAttr("disabled");
+                $("#log_error_msg").html(res.Message);
+            }
+        }
+    </script>
+</body>
+</html>
