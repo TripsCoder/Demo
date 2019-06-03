@@ -35,8 +35,6 @@ namespace EZNEW.Domain.Sys.Service
         /// <returns></returns>
         public static Result<User> SaveUser(User user)
         {
-            #region 用户信息
-
             if (user == null)
             {
                 return Result<User>.FailedResult("用户信息为空");
@@ -50,29 +48,6 @@ namespace EZNEW.Domain.Sys.Service
             {
                 result = UpdateUser(user);
             }
-
-            #endregion
-
-            if (!result.Success)
-            {
-                return result;
-            }
-
-            #region 用户角色
-
-            if (user is AdminUser)
-            {
-                AdminUser adminUser = user as AdminUser;
-                //移除用户绑定角色
-                userRoleRepository.RemoveByFirst(new List<User>() { result.Object });
-                if (!adminUser.Roles.IsNullOrEmpty())
-                {
-                    userRoleRepository.Save(adminUser.Roles.Select(c=>new Tuple<User, Role>(adminUser,c)));
-                }
-            }
-
-            #endregion
-
             return result;
         }
 

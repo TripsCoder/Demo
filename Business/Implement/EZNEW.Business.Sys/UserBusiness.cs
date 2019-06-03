@@ -255,7 +255,7 @@ namespace EZNEW.Business.Sys
                 //绑定
                 if (!bindInfo.Binds.IsNullOrEmpty())
                 {
-                    UserRoleDomainService.BindUserAndRole(bindInfo.Binds.Select(c => new Tuple<User, Role>(User.CreateUser(c.Item1?.SysNo ?? 0), Role.CreateRole(c.Item2?.SysNo ?? 0))).ToArray());
+                    UserRoleDomainService.SaveUserRoles(bindInfo.Binds.Select(c => new Tuple<User, Role>(User.CreateUser(c.Item1?.SysNo ?? 0), Role.CreateRole(c.Item2?.SysNo ?? 0))).ToArray());
                 }
 
                 var commitResult = businessWork.Commit();

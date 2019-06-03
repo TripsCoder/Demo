@@ -14,7 +14,7 @@ namespace EZNEW.Domain.Sys.Repository
     /// <summary>
     /// 角色权限存储
     /// </summary>
-    public interface IRoleAuthorizeRepository:IRelationRepository<Role,Authority>
+    public interface IRoleAuthorizeRepository : IRelationRepository<Role, Authority>
     {
     }
 }
