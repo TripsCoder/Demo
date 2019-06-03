@@ -70,7 +70,7 @@ namespace EZNEW.Domain.Sys.Service
             }
             var userRoles = removeRoles.Select(r => new Tuple<User, Role>(user, r));
             userRoleRepository.Remove(userRoles);
-            return Result.SuccessResult("角色删除成功");
+            return Result.SuccessResult("删除成功");
         }
 
         #endregion
@@ -79,7 +79,15 @@ namespace EZNEW.Domain.Sys.Service
 
         #region 角色->用户
 
-        public static Result RoleAddUses(Role role, params User[] users)
+        #region 角色添加用户
+
+        /// <summary>
+        /// 角色添加用户
+        /// </summary>
+        /// <param name="role">角色信息</param>
+        /// <param name="users">用户信息</param>
+        /// <returns></returns>
+        public static Result RoleAddUsers(Role role, params User[] users)
         {
             if (role == null || users.IsNullOrEmpty())
             {
@@ -98,6 +106,66 @@ namespace EZNEW.Domain.Sys.Service
             var userRoles = users.Where(c => saveUserIds.Contains(c.SysNo)).Select(c => new Tuple<User, Role>(c, role));
             userRoleRepository.Save(userRoles);
             return Result.SuccessResult("添加成功");
+        }
+
+        #endregion
+
+        #region 角色删除用户
+
+        /// <summary>
+        /// 角色删除用户
+        /// </summary>
+        /// <param name="role">角色信息</param>
+        /// <param name="removeUsers">要删除的用户信息</param>
+        /// <returns></returns>
+        public static Result RoleRemoveUsers(Role role, params User[] removeUsers)
+        {
+            if (role == null || removeUsers.IsNullOrEmpty())
+            {
+                return Result.FailedResult("角色或者用户信息为空");
+            }
+            var userRoles = removeUsers.Select(r => new Tuple<User, Role>(r, role));
+            userRoleRepository.Remove(userRoles);
+            return Result.SuccessResult("删除成功");
+        }
+
+        #endregion
+
+        #endregion
+
+        #region 保存用户角色
+
+        /// <summary>
+        /// 保存用户角色
+        /// </summary>
+        /// <param name="userRoles">用户角色</param>
+        /// <returns></returns>
+        public static Result SaveUserRoles(IEnumerable<Tuple<User, Role>> userRoles)
+        {
+            if (userRoles.IsNullOrEmpty())
+            {
+                return Result.FailedResult("用户角色信息为空");
+            }
+            userRoleRepository.Save(userRoles);
+            return Result.SuccessResult("保存成功");
+        }
+
+        #endregion
+
+        #region 删除用户角色
+
+        /// <summary>
+        /// 删除用户角色
+        /// </summary>
+        /// <param name="userRoles">用户角色信息</param>
+        public static Result RemoveUserRoles(IEnumerable<Tuple<User, Role>> userRoles)
+        {
+            if (userRoles.IsNullOrEmpty())
+            {
+                return Result.FailedResult("用户角色信息为空");
+            }
+            userRoleRepository.Remove(userRoles);
+            return Result.SuccessResult("删除成功");
         }
 
         #endregion

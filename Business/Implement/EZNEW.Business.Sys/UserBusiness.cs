@@ -250,7 +250,7 @@ namespace EZNEW.Business.Sys
                 //解绑
                 if (!bindInfo.UnBinds.IsNullOrEmpty())
                 {
-                    UserRoleDomainService.UnBindUserAndRole(bindInfo.UnBinds.Select(c => new Tuple<User, Role>(User.CreateUser(c.Item1?.SysNo ?? 0), Role.CreateRole(c.Item2?.SysNo ?? 0))).ToArray());
+                    UserRoleDomainService.RemoveUserRoles(bindInfo.UnBinds.Select(c => new Tuple<User, Role>(User.CreateUser(c.Item1?.SysNo ?? 0), Role.CreateRole(c.Item2?.SysNo ?? 0))).ToArray());
                 }
                 //绑定
                 if (!bindInfo.Binds.IsNullOrEmpty())

@@ -84,6 +84,7 @@ namespace EZNEW.Domain.Sys.Model
                 roleList.SetValue(newRoles.ToList(), false);
             }
             roleList.CurrentValue.AddRange(newRoles);
+            UserRoleDomainService.UserAddRoles(this, newRoles);
         }
 
         #endregion
@@ -104,6 +105,7 @@ namespace EZNEW.Domain.Sys.Model
             {
                 roleList.CurrentValue.RemoveAll(r => roles.Contains(r));
             }
+            UserRoleDomainService.UserRemoveRoles(this, roles);
         }
 
         #endregion
@@ -117,28 +119,8 @@ namespace EZNEW.Domain.Sys.Model
         /// <param name="init">是否初始化，设置为初始化后将不会再自动加载信息</param>
         public void SetRoles(IEnumerable<Role> roles, bool init = true)
         {
-            roleList = roles?.ToList() ?? new List<Role>(0);
-            roleLoaded = init;
-        }
-
-        #endregion
-
-        #region 获取角色
-
-        /// <summary>
-        /// 获取角色
-        /// </summary>
-        /// <returns></returns>
-        public List<Role> GetRoles()
-        {
-            if (roleLoaded || !AllowLazyLoad("Roles"))
-            {
-                return roleList;
-            }
-            var nowRoles = RoleDomainService.GetUserBindRole(sysNo);
-            roleList.AddRange(nowRoles);
-            roleLoaded = true;
-            return roleList;
+            roles = roles ?? new List<Role>(0);
+            roleList.SetValue(roles.ToList(), init);
         }
 
         #endregion
@@ -153,7 +135,6 @@ namespace EZNEW.Domain.Sys.Model
         public override void ModifyFromOtherUser(User user, IEnumerable<string> excludePropertys = null)
         {
             base.ModifyFromOtherUser(user, excludePropertys);
-
             if (user == null || !(user is AdminUser))
             {
                 return;
@@ -176,6 +157,26 @@ namespace EZNEW.Domain.Sys.Model
         #endregion
 
         #region 内部方法
+
+        #region 获取角色
+
+        /// <summary>
+        /// 获取角色
+        /// </summary>
+        /// <returns></returns>
+        protected List<Role> GetRoles()
+        {
+            if (!AllowLazyLoad("Roles"))
+            {
+                return roleList;
+            }
+            var nowRoles = RoleDomainService.GetUserBindRole(sysNo);
+            nowRoles.AddRange(roleList.CurrentValue);
+            nowRoles = nowRoles.Distinct().ToList();
+            return nowRoles;
+        }
+
+        #endregion
 
         #endregion
 
