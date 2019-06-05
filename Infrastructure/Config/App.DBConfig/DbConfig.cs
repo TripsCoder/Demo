@@ -43,7 +43,7 @@ namespace App.DBConfig
             servers.Add(new ServerInfo()
             {
                 ServerType = ServerType.SQLServer,
-                ConnectionString = "Data Source=139.196.77.113;Initial Catalog=S_Default;user id=sa;password=admin123!@#;"//ContainerManager.Resolve<IConfiguration>().GetConnectionString("DefaultConnection")
+                ConnectionString = ContainerManager.Resolve<IConfiguration>().GetConnectionString("DefaultConnection")
             });
             return await Task.FromResult(servers);
         }
