@@ -26,7 +26,7 @@ namespace EZNEW.Entity.CTask
         /// <summary>
         /// 名称
         /// </summary>
-        [EntityField(Description = "名称",Name ="G_Name")]
+        [EntityField(Description = "名称")]
         public string Name
         {
             get { return valueDict.GetValue<string>("Name"); }
