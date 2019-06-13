@@ -171,8 +171,11 @@ namespace EZNEW.Domain.Sys.Model
                 return roleList;
             }
             var nowRoles = RoleDomainService.GetUserBindRole(sysNo);
-            nowRoles.AddRange(roleList.CurrentValue);
-            nowRoles = nowRoles.Distinct().ToList();
+            if (!roleList.CurrentValue.IsNullOrEmpty())
+            {
+                nowRoles?.AddRange(roleList.CurrentValue);
+            }
+            nowRoles = nowRoles?.Distinct().ToList()??new List<Role>(0);
             return nowRoles;
         }
 
