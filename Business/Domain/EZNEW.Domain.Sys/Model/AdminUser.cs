@@ -53,11 +53,11 @@ namespace EZNEW.Domain.Sys.Model
         {
             get
             {
-                return GetRoles();
+                return roleList.Value;
             }
             protected set
             {
-                roleList = value ?? new List<Role>(0);
+                roleList.SetValue(value ?? new List<Role>(0), false);
             }
         }
 
@@ -168,14 +168,14 @@ namespace EZNEW.Domain.Sys.Model
         {
             if (!AllowLazyLoad("Roles"))
             {
-                return roleList;
+                return roleList.CurrentValue;
             }
             var nowRoles = RoleDomainService.GetUserBindRole(sysNo);
             if (!roleList.CurrentValue.IsNullOrEmpty())
             {
                 nowRoles?.AddRange(roleList.CurrentValue);
             }
-            nowRoles = nowRoles?.Distinct().ToList()??new List<Role>(0);
+            nowRoles = nowRoles?.Distinct().ToList() ?? new List<Role>(0);
             return nowRoles;
         }
 
