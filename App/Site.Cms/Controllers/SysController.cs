@@ -419,7 +419,7 @@ namespace Site.Cms.Controllers
             var userPager = SearchAdminUserData(filter);
             object objResult = new
             {
-                TotalCount = userPager.TotalCount,
+                userPager.TotalCount,
                 Datas = JsonSerialize.ObjectToJson(userPager.ToList())
             };
             return Json(objResult);

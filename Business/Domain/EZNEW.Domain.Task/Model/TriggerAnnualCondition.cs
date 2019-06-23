@@ -1,4 +1,5 @@
 ﻿using EZNEW.CTask;
+using EZNEW.Develop.Domain.Aggregation;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -10,6 +11,7 @@ namespace EZNEW.Domain.CTask.Model
     /// <summary>
     /// 触发条件
     /// </summary>
+    [VirtualAggregation]
     public class TriggerAnnualCondition : TriggerCondition
     {
         #region 字段

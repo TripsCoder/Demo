@@ -12,6 +12,7 @@ using EZNEW.Framework.IoC;
 using EZNEW.Framework;
 using EZNEW.Framework.Paging;
 using EZNEW.Framework.Response;
+using EZNEW.Develop.Command.Modify;
 
 namespace EZNEW.Domain.Sys.Service
 {
@@ -42,7 +43,7 @@ namespace EZNEW.Domain.Sys.Service
 
             //删除角色信息
             IQuery removeQuery = QueryFactory.Create<RoleQuery>(c => roleIds.Contains(c.SysNo));
-            removeQuery.SetRecurve<RoleQuery>(c => c.SysNo, c => c.Parent);
+            removeQuery.SetRecurve<RoleQuery>(c => c.SysNo, c => c.Parent);//删除角色所有的下级数据
             roleRepository.Remove(removeQuery);
         }
 
@@ -150,7 +151,9 @@ namespace EZNEW.Domain.Sys.Service
             {
                 return Result<Role>.FailedResult("没有指定要操作的角色信息");
             }
-            //上级
+
+            #region 修改上级
+
             long newParentRoleId = newRole.Parent == null ? 0 : newRole.Parent.SysNo;
             long oldParentRoleId = role.Parent == null ? 0 : role.Parent.SysNo;
             //上级改变后 
@@ -168,10 +171,13 @@ namespace EZNEW.Domain.Sys.Service
                 }
                 role.SetParentRole(parentRole);
             }
+
+            #endregion
+
             //修改信息
             role.Name = newRole.Name;
             role.Status = newRole.Status;
-            role.Remark = newRole.Remark;
+            role.Remark = newRole.Remark ?? string.Empty;
             role.Save();//保存角色信息
             var result = Result<Role>.SuccessResult("修改成功");
             result.Data = role;
@@ -305,5 +311,26 @@ namespace EZNEW.Domain.Sys.Service
         }
 
         #endregion
+
+        public static void Modify(IModify modify, IQuery query)
+        {
+            roleRepository.Modify(modify, query);
+        }
+
+        public static void Remove(IQuery query)
+        {
+            roleRepository.Remove(query);
+        }
+
+        public static bool Exist(IQuery query)
+        {
+            return roleRepository.Exist(query);
+        }
+
+        public static int MaxLevel(IQuery query)
+        {
+            query.AddQueryFields<RoleQuery>(r => r.Level);
+            return roleRepository.Max<int>(query);
+        }
     }
 }

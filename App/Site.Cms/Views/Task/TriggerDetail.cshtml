@@ -433,12 +433,12 @@
                         break;
                     case 2:
                         columns.push({ "title": '服务状态', "targets":(applyToAll?i-1:i),"data":function ( row, type, val, meta ){
-                            return serverStateDic[row.Server.State];
+                            return serverStateDic[row.Server.Status];
                         },width:'100px',className:'txt-center'});
                         break;
                     case 3:
                         columns.push({ "title": '调度状态', "targets":(applyToAll?i-1:i),"data":function ( row, type, val, meta ){
-                            return triggerServerRunStateDic[row.RunState];
+                            return triggerServerRunStateDic[row.RunStatus];
                         },width:'100px',className:'txt-center'});
                         break;
                     case 4:

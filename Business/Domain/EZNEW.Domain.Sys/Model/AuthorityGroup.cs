@@ -236,7 +236,7 @@ namespace EZNEW.Domain.Sys.Model
                 throw new Exception("请填写正确的排序编号");
             }
             sortIndex = newSortIndex;
-            //其它分组顺延
+            //其它角色顺延
             IQuery sortQuery = QueryFactory.Create<AuthorityGroupQuery>(r => r.Parent == (parent.CurrentValue == null ? 0 : parent.CurrentValue.SysNo) && r.SortIndex >= newSortIndex);
             IModify modifyExpression = ModifyFactory.Create();
             modifyExpression.Add<RoleQuery>(r => r.SortIndex, 1);
@@ -317,15 +317,6 @@ namespace EZNEW.Domain.Sys.Model
 
         #endregion
 
-        #region 获取对象标识信息
-
-        protected override string GetIdentityValue()
-        {
-            return sysNo.ToString();
-        }
-
-        #endregion
-
         #endregion
 
         #region 静态方法
@@ -360,6 +351,11 @@ namespace EZNEW.Domain.Sys.Model
             };
             return authorityGroup;
 
+        }
+
+        protected override string GetIdentityValue()
+        {
+            throw new NotImplementedException();
         }
 
         #endregion

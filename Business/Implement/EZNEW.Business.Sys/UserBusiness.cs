@@ -54,7 +54,7 @@ namespace EZNEW.Business.Sys
                 }
                 var commitResult = businessWork.Commit();
                 Result<UserDto> result = null;
-                if (commitResult.NoneCommandOrSuccess)
+                if (commitResult.EmptyResultOrSuccess)
                 {
                     result = Result<UserDto>.SuccessResult("保存成功");
                     result.Data = userSaveResult.Data.MapTo<UserDto>();
@@ -250,12 +250,12 @@ namespace EZNEW.Business.Sys
                 //解绑
                 if (!bindInfo.UnBinds.IsNullOrEmpty())
                 {
-                    UserRoleDomainService.RemoveUserRoles(bindInfo.UnBinds.Select(c => new Tuple<User, Role>(User.CreateUser(c.Item1?.SysNo ?? 0), Role.CreateRole(c.Item2?.SysNo ?? 0))).ToArray());
+                    UserRoleDomainService.UnBindUserAndRole(bindInfo.UnBinds.Select(c => new Tuple<User, Role>(User.CreateUser(c.Item1?.SysNo ?? 0), Role.CreateRole(c.Item2?.SysNo ?? 0))).ToArray());
                 }
                 //绑定
                 if (!bindInfo.Binds.IsNullOrEmpty())
                 {
-                    UserRoleDomainService.SaveUserRoles(bindInfo.Binds.Select(c => new Tuple<User, Role>(User.CreateUser(c.Item1?.SysNo ?? 0), Role.CreateRole(c.Item2?.SysNo ?? 0))).ToArray());
+                    UserRoleDomainService.BindUserAndRole(bindInfo.Binds.Select(c => new Tuple<User, Role>(User.CreateUser(c.Item1?.SysNo ?? 0), Role.CreateRole(c.Item2?.SysNo ?? 0))).ToArray());
                 }
 
                 var commitResult = businessWork.Commit();
@@ -292,7 +292,7 @@ namespace EZNEW.Business.Sys
                 }
                 if (!filter.NameMateKey.IsNullOrEmpty())
                 {
-                    query.And<UserQuery>(QueryOperator.OR, CriteriaOperator.Like, filter.NameMateKey,null, u => u.UserName, u => u.RealName);
+                    query.And<UserQuery>(QueryOperator.OR, CriteriaOperator.Like, filter.NameMateKey, null, u => u.UserName, u => u.RealName);
                 }
                 if (!filter.UserName.IsNullOrEmpty())
                 {
@@ -328,7 +328,7 @@ namespace EZNEW.Business.Sys
                 }
                 if (!filter.ContactMateKey.IsNullOrEmpty())
                 {
-                    query.And<UserQuery>(QueryOperator.OR, CriteriaOperator.Like, filter.ContactMateKey,null, u => u.Contact.Mobile, u => u.Contact.Email, u => u.Contact.QQ);
+                    query.And<UserQuery>(QueryOperator.OR, CriteriaOperator.Like, filter.ContactMateKey, null, u => u.Contact.Mobile, u => u.Contact.Email, u => u.Contact.QQ);
                 }
                 if (filter.SuperUser.HasValue)
                 {
@@ -391,7 +391,7 @@ namespace EZNEW.Business.Sys
                 IQuery withRoleQuery = QueryFactory.Create<UserRoleQuery>();
                 withRoleQuery.In<UserRoleQuery>(r => r.RoleSysNo, adminUserFilter.WithoutRoles);
                 withRoleQuery.AddQueryFields<UserRoleQuery>(r => r.UserSysNo);
-                userQuery.And<UserQuery>(u => u.SysNo,CriteriaOperator.NotIn, withRoleQuery);
+                userQuery.And<UserQuery>(u => u.SysNo, CriteriaOperator.NotIn, withRoleQuery);
             }
 
             #endregion

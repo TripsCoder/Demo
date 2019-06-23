@@ -356,19 +356,6 @@ namespace EZNEW.Domain.Sys.Model
 
         #endregion
 
-        #region 获取对象标识
-
-        /// <summary>
-        /// 获取对象标识
-        /// </summary>
-        /// <returns></returns>
-        protected override string GetIdentityValue()
-        {
-            return SysNo.ToString();
-        } 
-
-        #endregion
-
         #region 从指定对象复制值
 
         /// <summary>
@@ -468,6 +455,11 @@ namespace EZNEW.Domain.Sys.Model
                     break;
             }
             return user;
+        }
+
+        protected override string GetIdentityValue()
+        {
+            return SysNo.ToString();
         }
 
         #endregion

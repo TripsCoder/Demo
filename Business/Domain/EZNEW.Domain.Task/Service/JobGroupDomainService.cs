@@ -116,8 +116,8 @@ namespace EZNEW.Domain.CTask.Service
                 throw new Exception("没有指定要操作的分组信息");
             }
             //上级
-            string newParentGroupId = newJobGroup.Parent == null ? "" : newJobGroup.Parent.Code;
-            string oldParentGroupId = jobGroup.Parent == null ? "" : jobGroup.Parent.Code;
+            string newParentGroupId = newJobGroup.Parent?.Code ?? string.Empty;
+            string oldParentGroupId = jobGroup.Parent?.Code ?? string.Empty;
             //上级改变后 
             if (newParentGroupId != oldParentGroupId)
             {

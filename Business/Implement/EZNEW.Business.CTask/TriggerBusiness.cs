@@ -58,16 +58,6 @@ namespace EZNEW.Business.CTask
                 {
                     result = Result<TriggerDto>.FailedResult("保存失败");
                 }
-
-                #region 远程命令
-
-                if (result.Success)
-                {
-                    TaskCommandBusiness.RefreshTriggerAsync(new List<string>() { result.Object.Id });
-                }
-
-                #endregion
-
                 return result;
             }
         }
@@ -139,12 +129,6 @@ namespace EZNEW.Business.CTask
 
                 #endregion
 
-                #region 远程命令
-
-                TaskCommandBusiness.RemoveTriggerAsync(deleteInfo.TriggerIds.ToArray()).Wait();
-
-                #endregion
-
                 //删除逻辑
                 TriggerDomainService.DeleteTrigger(deleteInfo.TriggerIds);
                 var commitResult = businessWork.Commit();
@@ -172,16 +156,6 @@ namespace EZNEW.Business.CTask
                 TriggerDomainService.ModifyTriggerState(stateInfo.Triggers.Select(c => c.MapTo<Trigger>()));
                 var commitResult = businessWork.Commit();
                 var result = commitResult.ExecutedSuccess ? Result.SuccessResult("修改成功") : Result.FailedResult("修改失败");
-
-                #region 远程命令
-
-                if (result.Success)
-                {
-                    TaskCommandBusiness.ModifyTriggerStateAsync(stateInfo.Triggers.Select(c => c.Id).ToArray());
-                }
-
-                #endregion
-
                 return result;
             }
         }

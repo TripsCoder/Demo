@@ -355,19 +355,6 @@ namespace EZNEW.Domain.Sys.Model
 
         #endregion
 
-        #region 获取对象标识信息
-
-        /// <summary>
-        /// 获取对象标识信息
-        /// </summary>
-        /// <returns></returns>
-        protected override string GetIdentityValue()
-        {
-            return SysNo.ToString();
-        }
-
-        #endregion
-
         #endregion
 
         #region 静态方法
@@ -401,6 +388,11 @@ namespace EZNEW.Domain.Sys.Model
                 Name = name
             };
             return role;
+        }
+
+        protected override string GetIdentityValue()
+        {
+            return SysNo.ToString();
         }
 
         #endregion

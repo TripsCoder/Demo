@@ -26,7 +26,12 @@ namespace EZNEW.Domain.Sys.Model
         /// <summary>
         /// 用户角色
         /// </summary>
-        private LazyMember<List<Role>> roleList = null;
+        private List<Role> roleList = new List<Role>();
+
+        /// <summary>
+        /// role loaded
+        /// </summary>
+        private bool roleLoaded = false;
 
         #endregion
 
@@ -39,7 +44,6 @@ namespace EZNEW.Domain.Sys.Model
         internal AdminUser() : base()
         {
             userType = UserType.管理账户;
-            roleList = new LazyMember<List<Role>>(GetRoles);
         }
 
         #endregion
@@ -72,19 +76,14 @@ namespace EZNEW.Domain.Sys.Model
         /// <summary>
         /// 添加角色
         /// </summary>
-        /// <param name="newRoles">角色信息</param>
-        public void AddRoles(params Role[] newRoles)
+        /// <param name="roleList">角色信息</param>
+        public void AddRoles(IEnumerable<Role> roleList)
         {
-            if (newRoles.IsNullOrEmpty())
+            if (roleList.IsNullOrEmpty())
             {
                 return;
             }
-            if (roleList.CurrentValue == null)
-            {
-                roleList.SetValue(newRoles.ToList(), false);
-            }
-            roleList.CurrentValue.AddRange(newRoles);
-            UserRoleDomainService.UserAddRoles(this, newRoles);
+            this.roleList.AddRange(roleList);
         }
 
         #endregion
@@ -94,18 +93,25 @@ namespace EZNEW.Domain.Sys.Model
         /// <summary>
         /// 移除角色
         /// </summary>
-        /// <param name="roles">角色信息</param>
-        public void RemoveRoles(params Role[] roles)
+        /// <param name="roleList">角色信息</param>
+        public void RemoveRoles(IEnumerable<Role> roleList)
         {
-            if (roles.IsNullOrEmpty())
+            if (roleList.IsNullOrEmpty())
             {
                 return;
             }
-            if (!roleList.CurrentValue.IsNullOrEmpty())
+            var nowRoleList = this.roleList;
+            if (nowRoleList.IsNullOrEmpty())
             {
-                roleList.CurrentValue.RemoveAll(r => roles.Contains(r));
+                return;
             }
-            UserRoleDomainService.UserRemoveRoles(this, roles);
+            IEnumerable<long> removeRoleSysNos = roleList.Select(c => c.SysNo);
+            nowRoleList.ForEach(c =>
+            {
+                if (removeRoleSysNos.Contains(c.SysNo))
+                {
+                }
+            });
         }
 
         #endregion
@@ -119,8 +125,28 @@ namespace EZNEW.Domain.Sys.Model
         /// <param name="init">是否初始化，设置为初始化后将不会再自动加载信息</param>
         public void SetRoles(IEnumerable<Role> roles, bool init = true)
         {
-            roles = roles ?? new List<Role>(0);
-            roleList.SetValue(roles.ToList(), init);
+            roleList = roles?.ToList() ?? new List<Role>(0);
+            roleLoaded = init;
+        }
+
+        #endregion
+
+        #region 获取角色
+
+        /// <summary>
+        /// 获取角色
+        /// </summary>
+        /// <returns></returns>
+        public List<Role> GetRoles()
+        {
+            if (roleLoaded || !AllowLazyLoad("Roles"))
+            {
+                return roleList;
+            }
+            var nowRoles=RoleDomainService.GetUserBindRole(sysNo);
+            roleList.AddRange(nowRoles);
+            roleLoaded = true;
+            return roleList;
         }
 
         #endregion
@@ -135,6 +161,7 @@ namespace EZNEW.Domain.Sys.Model
         public override void ModifyFromOtherUser(User user, IEnumerable<string> excludePropertys = null)
         {
             base.ModifyFromOtherUser(user, excludePropertys);
+
             if (user == null || !(user is AdminUser))
             {
                 return;
@@ -157,26 +184,6 @@ namespace EZNEW.Domain.Sys.Model
         #endregion
 
         #region 内部方法
-
-        #region 获取角色
-
-        /// <summary>
-        /// 获取角色
-        /// </summary>
-        /// <returns></returns>
-        protected List<Role> GetRoles()
-        {
-            if (!AllowLazyLoad("Roles"))
-            {
-                return roleList;
-            }
-            var nowRoles = RoleDomainService.GetUserBindRole(sysNo);
-            nowRoles.AddRange(roleList.CurrentValue);
-            nowRoles = nowRoles.Distinct().ToList();
-            return nowRoles;
-        }
-
-        #endregion
 
         #endregion
 

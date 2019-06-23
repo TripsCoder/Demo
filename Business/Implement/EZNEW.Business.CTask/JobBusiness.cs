@@ -57,16 +57,6 @@ namespace EZNEW.Business.CTask
                 {
                     result = Result<JobDto>.FailedResult("保存失败");
                 }
-
-                #region 添加执行命令
-
-                if (result.Success)
-                {
-                    TaskCommandBusiness.RefreshJobAsync(saveInfo.Job?.Id);
-                }
-
-                #endregion
-
                 return result;
             }
         }
@@ -138,12 +128,6 @@ namespace EZNEW.Business.CTask
 
                 #endregion
 
-                #region 远程命令
-
-                TaskCommandBusiness.DeleteJobAsync(deleteInfo.JobIds.ToArray()).Wait();
-
-                #endregion
-
                 //删除逻辑
                 JobDomainService.DeleteJob(deleteInfo.JobIds);
                 var commitResult = businessWork.Commit();
@@ -171,16 +155,6 @@ namespace EZNEW.Business.CTask
                 JobDomainService.ModifyJobRunState(stateInfo.Jobs.Select(c => c.MapTo<Job>()));
                 var commitResult = businessWork.Commit();
                 Result result = commitResult.ExecutedSuccess ? Result.SuccessResult("修改成功") : Result.FailedResult("修改失败");
-
-                #region 远程命令
-
-                if (result.Success)
-                {
-                    TaskCommandBusiness.ModifyJobRunStateAsync(stateInfo.Jobs.Select(c => c.Id).ToArray());
-                }
-
-                #endregion
-
                 return result;
             }
         }

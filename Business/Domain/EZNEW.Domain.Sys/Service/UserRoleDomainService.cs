@@ -9,8 +9,6 @@ using System.Text;
 using System.Threading.Tasks;
 using EZNEW.Framework.Extension;
 using EZNEW.Framework.Response;
-using EZNEW.Develop.CQuery;
-using EZNEW.Query.Sys;
 
 namespace EZNEW.Domain.Sys.Service
 {
@@ -21,151 +19,40 @@ namespace EZNEW.Domain.Sys.Service
     {
         static IUserRoleRepository userRoleRepository = ContainerManager.Container.Resolve<IUserRoleRepository>();
 
-        #region 用户->角色
-
-        #region 添加用户角色
+        #region 用户和角色的绑定
 
         /// <summary>
-        /// 添加用户角色
+        /// 绑定用户角色
         /// </summary>
-        /// <param name="user">用户</param>
-        /// <param name="newRoles">新角色</param>
+        /// <param name="userRoleBinds">用户角色绑定信息</param>
         /// <returns></returns>
-        public static Result UserAddRoles(User user, params Role[] newRoles)
+        public static Result BindUserAndRole(params Tuple<User, Role>[] userRoleBinds)
         {
-            if (user == null || newRoles.IsNullOrEmpty())
+            if (userRoleBinds.IsNullOrEmpty())
             {
-                return Result.FailedResult("用户或角色信息为空");
+                return Result.FailedResult("没有指定任何要绑定的信息");
             }
-            var newRoleIds = newRoles.Select(c => c.SysNo);
-            var query = QueryFactory.Create<UserRoleQuery>(c => c.UserSysNo == user.SysNo && newRoleIds.Contains(c.RoleSysNo));
-            var nowRoles = userRoleRepository.GetList(query);
-            var nowRoleIds = nowRoles.Select(c => c.Item2.SysNo);
-            //保存数据
-            var saveRoleIds = newRoleIds.Except(nowRoleIds);
-            if (saveRoleIds.IsNullOrEmpty())
-            {
-                return Result.SuccessResult("添加成功");
-            }
-            var userRoles = newRoles.Where(c => saveRoleIds.Contains(c.SysNo)).Select(r => new Tuple<User, Role>(user, r));
-            userRoleRepository.Save(userRoles);
-            return Result.SuccessResult("添加成功");
+            userRoleRepository.Save(userRoleBinds);
+            return Result.SuccessResult("绑定成功");
         }
 
         #endregion
 
-        #region 删除用户角色
+        #region 用户角色解绑
 
         /// <summary>
-        /// 删除用户角色
+        /// 用户角色解绑
         /// </summary>
-        /// <param name="user">用户</param>
-        /// <param name="removeRoles">要移除的角色</param>
+        /// <param name="userRoleBinds">用户角色绑定信息</param>
         /// <returns></returns>
-        public static Result UserRemoveRoles(User user, params Role[] removeRoles)
+        public static Result UnBindUserAndRole(params Tuple<User, Role>[] userRoleBinds)
         {
-            if (user == null || removeRoles.IsNullOrEmpty())
+            if (userRoleBinds.IsNullOrEmpty())
             {
-                return Result.FailedResult("用户或角色信息为空");
+                return Result.FailedResult("没有指定要解绑任何信息");
             }
-            var userRoles = removeRoles.Select(r => new Tuple<User, Role>(user, r));
-            userRoleRepository.Remove(userRoles);
-            return Result.SuccessResult("删除成功");
-        }
-
-        #endregion
-
-        #endregion
-
-        #region 角色->用户
-
-        #region 角色添加用户
-
-        /// <summary>
-        /// 角色添加用户
-        /// </summary>
-        /// <param name="role">角色信息</param>
-        /// <param name="users">用户信息</param>
-        /// <returns></returns>
-        public static Result RoleAddUsers(Role role, params User[] users)
-        {
-            if (role == null || users.IsNullOrEmpty())
-            {
-                return Result.FailedResult("角色或用户信息为空");
-            }
-            var newUserIds = users.Select(c => c.SysNo);
-            var query = QueryFactory.Create<UserRoleQuery>(c => c.RoleSysNo == role.SysNo && newUserIds.Contains(c.UserSysNo));
-            var nowUserRoles = userRoleRepository.GetList(query);
-            var nowUserIds = nowUserRoles.Select(c => c.Item1.SysNo);
-            //add role users
-            var saveUserIds = newUserIds.Except(nowUserIds);
-            if (saveUserIds.IsNullOrEmpty())
-            {
-                return Result.SuccessResult("添加成功");
-            }
-            var userRoles = users.Where(c => saveUserIds.Contains(c.SysNo)).Select(c => new Tuple<User, Role>(c, role));
-            userRoleRepository.Save(userRoles);
-            return Result.SuccessResult("添加成功");
-        }
-
-        #endregion
-
-        #region 角色删除用户
-
-        /// <summary>
-        /// 角色删除用户
-        /// </summary>
-        /// <param name="role">角色信息</param>
-        /// <param name="removeUsers">要删除的用户信息</param>
-        /// <returns></returns>
-        public static Result RoleRemoveUsers(Role role, params User[] removeUsers)
-        {
-            if (role == null || removeUsers.IsNullOrEmpty())
-            {
-                return Result.FailedResult("角色或者用户信息为空");
-            }
-            var userRoles = removeUsers.Select(r => new Tuple<User, Role>(r, role));
-            userRoleRepository.Remove(userRoles);
-            return Result.SuccessResult("删除成功");
-        }
-
-        #endregion
-
-        #endregion
-
-        #region 保存用户角色
-
-        /// <summary>
-        /// 保存用户角色
-        /// </summary>
-        /// <param name="userRoles">用户角色</param>
-        /// <returns></returns>
-        public static Result SaveUserRoles(IEnumerable<Tuple<User, Role>> userRoles)
-        {
-            if (userRoles.IsNullOrEmpty())
-            {
-                return Result.FailedResult("用户角色信息为空");
-            }
-            userRoleRepository.Save(userRoles);
-            return Result.SuccessResult("保存成功");
-        }
-
-        #endregion
-
-        #region 删除用户角色
-
-        /// <summary>
-        /// 删除用户角色
-        /// </summary>
-        /// <param name="userRoles">用户角色信息</param>
-        public static Result RemoveUserRoles(IEnumerable<Tuple<User, Role>> userRoles)
-        {
-            if (userRoles.IsNullOrEmpty())
-            {
-                return Result.FailedResult("用户角色信息为空");
-            }
-            userRoleRepository.Remove(userRoles);
-            return Result.SuccessResult("删除成功");
+            userRoleRepository.Remove(userRoleBinds);
+            return Result.SuccessResult("解绑成功");
         }
 
         #endregion

@@ -96,20 +96,6 @@ namespace EZNEW.Business.CTask
 
                 TriggerServerDomainService.DeleteTriggerServer(deleteInfo.TriggerServers.Select(c => c.MapTo<TriggerServer>()));
                 var commitResult = businessWork.Commit();
-                #region 远程命令
-
-                if (commitResult.ExecutedSuccess)
-                {
-                    Dictionary<string, List<string>> serviceTriggers = new Dictionary<string, List<string>>();
-                    var serviceIds = deleteInfo.TriggerServers.Select(c => c.Server?.Id).Distinct().ToList();
-                    foreach (var serviceId in serviceIds)
-                    {
-                        serviceTriggers.Add(serviceId, deleteInfo.TriggerServers.Where(c => c.Server?.Id == serviceId).Select(c => c.Trigger.Id).ToList());
-                    }
-                    TaskCommandBusiness.RemoveTriggerServiceHostAsync(serviceTriggers);
-                }
-
-                #endregion
                 return commitResult.ExecutedSuccess ? Result.SuccessResult("删除成功") : Result.FailedResult("删除失败");
             }
         }
@@ -133,22 +119,6 @@ namespace EZNEW.Business.CTask
                 }
                 TriggerServerDomainService.ModifyRunState(stateInfo.TriggerServers.Select(c => c.MapTo<TriggerServer>()));
                 var commitResult = businessWork.Commit();
-
-                #region 远程命令
-
-                if (commitResult.ExecutedSuccess)
-                {
-                    Dictionary<string, List<string>> serviceTriggers = new Dictionary<string, List<string>>();
-                    var serviceIds = stateInfo.TriggerServers.Select(c => c.Server?.Id).Distinct().ToList();
-                    foreach (var serviceId in serviceIds)
-                    {
-                        serviceTriggers.Add(serviceId, stateInfo.TriggerServers.Where(c => c.Server?.Id == serviceId).Select(c => c.Trigger.Id).ToList());
-                    }
-                    TaskCommandBusiness.ModifyTriggerServiceRunStateAsync(serviceTriggers);
-                }
-
-                #endregion
-
                 return commitResult.ExecutedSuccess ? Result.SuccessResult("修改成功") : Result.FailedResult("修改失败");
             }
         }
@@ -172,21 +142,7 @@ namespace EZNEW.Business.CTask
                 }
                 TriggerServerDomainService.SaveTriggerServer(saveInfo.TriggerServers.Select(c => c.MapTo<TriggerServer>()));
                 var commitResult = businessWork.Commit();
-                #region 远程命令
-
-                if (commitResult.ExecutedSuccess)
-                {
-                    Dictionary<string, List<string>> serviceTriggers = new Dictionary<string, List<string>>();
-                    var serviceIds = saveInfo.TriggerServers.Select(c => c.Server?.Id).Distinct().ToList();
-                    foreach (var serviceId in serviceIds)
-                    {
-                        serviceTriggers.Add(serviceId, saveInfo.TriggerServers.Where(c => c.Server?.Id == serviceId).Select(c => c.Trigger.Id).ToList());
-                    }
-                    TaskCommandBusiness.AddTriggerServiceHostAsync(serviceTriggers);
-                }
-
-                #endregion
-                return commitResult.NoneCommandOrSuccess ? Result.SuccessResult("保存成功") : Result.FailedResult("保存失败");
+                return commitResult.EmptyResultOrSuccess ? Result.SuccessResult("保存成功") : Result.FailedResult("保存失败");
             }
         }
 

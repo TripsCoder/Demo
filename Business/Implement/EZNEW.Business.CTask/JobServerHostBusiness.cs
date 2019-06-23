@@ -48,23 +48,6 @@ namespace EZNEW.Business.CTask
                 JobServerHostDomainService.SaveJobServerHost(jobServerHostList);
                 var commitResult = businessWork.Commit();
                 var result = commitResult.ExecutedSuccess ? Result.SuccessResult("保存成功") : Result.FailedResult("保存失败");
-
-                #region 远程命令
-
-                if (result.Success)
-                {
-                    Dictionary<string, List<string>> serverJobIds = new Dictionary<string, List<string>>();
-                    var serverIds = jobServerHostList.Select(c => c.Server?.Id).Distinct();
-                    foreach (var serverId in serverIds)
-                    {
-                        var jobIds = jobServerHostList.Where(c => c.Server?.Id == serverId).Select(c => c.Job?.Id).ToList();
-                        serverJobIds.Add(serverId, jobIds);
-                    }
-                    TaskCommandBusiness.AddServiceJobHostAsync(serverJobIds);
-                }
-
-                #endregion
-
                 return result;
             }
         }
@@ -135,23 +118,6 @@ namespace EZNEW.Business.CTask
                 JobServerHostDomainService.DeleteJobServerHost(serverHosts);
                 var commitResult = businessWork.Commit();
                 var result = commitResult.ExecutedSuccess ? Result.SuccessResult("删除成功") : Result.FailedResult("删除失败");
-
-                #region 远程命令
-
-                if (result.Success)
-                {
-                    Dictionary<string, List<string>> serverJobIds = new Dictionary<string, List<string>>();
-                    var serverIds = serverHosts.Select(c => c.Server?.Id).Distinct();
-                    foreach (var serverId in serverIds)
-                    {
-                        var jobIds = serverHosts.Where(c => c.Server?.Id == serverId).Select(c => c.Job?.Id).ToList();
-                        serverJobIds.Add(serverId, jobIds);
-                    }
-                    TaskCommandBusiness.RemoveServiceJobHostAsync(serverJobIds);
-                }
-
-                #endregion
-
                 return result;
             }
         }
@@ -177,23 +143,6 @@ namespace EZNEW.Business.CTask
                 JobServerHostDomainService.ModifyRunState(jobServerHostList);
                 var commitResult = businessWork.Commit();
                 var result = commitResult.ExecutedSuccess ? Result.SuccessResult("修改成功") : Result.FailedResult("修改失败");
-
-                #region 远程命令
-
-                if (result.Success)
-                {
-                    Dictionary<string, List<string>> serverJobIds = new Dictionary<string, List<string>>();
-                    var serverIds = jobServerHostList.Select(c => c.Server?.Id).Distinct();
-                    foreach (var serverId in serverIds)
-                    {
-                        var jobIds = jobServerHostList.Where(c => c.Server?.Id == serverId).Select(c => c.Job?.Id).ToList();
-                        serverJobIds.Add(serverId, jobIds);
-                    }
-                    TaskCommandBusiness.ModifyServiceJobHostRunStateAsync(serverJobIds);
-                }
-
-                #endregion
-
                 return result;
             }
         }

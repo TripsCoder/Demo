@@ -78,7 +78,7 @@ namespace EZNEW.Domain.Sys.Service
             {
                 throw new Exception("应至少指定一个要删除的权限");
             }
-            IQuery delQuery = QueryFactory.Create();
+            IQuery delQuery = QueryFactory.Create<AuthorityQuery>();
             delQuery.In<AuthorityQuery>(a => a.Code, authorityCodes);
             authRepository.Remove(delQuery);
         }

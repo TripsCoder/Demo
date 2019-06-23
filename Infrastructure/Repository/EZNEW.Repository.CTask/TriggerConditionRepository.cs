@@ -286,10 +286,17 @@ namespace EZNEW.Repository.CTask
             {
                 return;
             }
-            triggerConditionRepositoryDict.Values.AsParallel().ForAll(c =>
+            foreach (var trigger in triggers)
             {
-                c.Save(triggers.Select(t => t.Condition).ToArray());
-            });
+                var condition = trigger?.Condition;
+                if (condition == null)
+                {
+                    continue;
+                }
+                condition.TriggerId = trigger.Id;
+                triggerConditionRepositoryDict.TryGetValue(condition.Type, out var triggerConditionRepository);
+                triggerConditionRepository?.Save(condition);
+            }
         }
 
         #endregion

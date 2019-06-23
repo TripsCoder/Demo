@@ -57,15 +57,6 @@ namespace EZNEW.Business.CTask
                 {
                     result = Result<ServerNodeDto>.FailedResult("保存失败");
                 }
-                #region 远程命令
-
-                if (result.Success)
-                {
-                    TaskCommandBusiness.RefreshServiceAsync(new List<string>() { result.Object?.Id });
-                }
-
-                #endregion
-
                 return result;
             }
         }
@@ -141,16 +132,6 @@ namespace EZNEW.Business.CTask
                 //删除逻辑
                 ServerNodeDomainService.DeleteServerNode(deleteInfo.ServerNodeIds);
                 var commitResult = businessWork.Commit();
-
-                #region 远程命令
-
-                if (commitResult.ExecutedSuccess)
-                {
-                    TaskCommandBusiness.RemoveServiceAsync(nowServers);
-                }
-
-                #endregion
-
                 return commitResult.ExecutedSuccess ? Result.SuccessResult("删除成功") : Result.FailedResult("删除失败");
             }
         }
@@ -175,14 +156,6 @@ namespace EZNEW.Business.CTask
                 var servers = stateInfo.Servers.Select(c => c.MapTo<ServerNode>());
                 ServerNodeDomainService.ModifyServerNodeRunState(servers);
                 var commitResult = businessWork.Commit();
-                #region 远程命令
-
-                if (commitResult.ExecutedSuccess)
-                {
-                    TaskCommandBusiness.RefreshServiceAsync(stateInfo.Servers.Select(c => c.Id));
-                }
-
-                #endregion
                 return commitResult.ExecutedSuccess ? Result.SuccessResult("修改成功") : Result.FailedResult("修改失败");
             }
         }

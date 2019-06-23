@@ -1,0 +1,33 @@
+﻿{
+    "rules": [
+        {
+            "typeName": "EZNEW.Domain.Sys.Model.Role,EZNEW.Domain.Sys, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
+            "rules": [
+                {
+                    "name": "Name",
+                    "rules": [
+                        {
+                            "maxValue": "5",
+                            "minValue": "1",
+                            "vtype": "StringLength",
+                            "errorMsg": "角色名称长度不能大于5个字符",
+                            "tipMsg": false
+                        }
+                    ]
+                },
+                {
+                    "name": "Remark",
+                    "rules": [
+                        {
+                            "maxValue": "5",
+                            "minValue": "1",
+                            "vtype": "StringLength",
+                            "errorMsg": "备注信息长度不能大于5个字符",
+                            "tipMsg": false
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

@@ -64,6 +64,37 @@ namespace EZNEW.Repository.CTask
         #region 获取数据
 
         /// <summary>
+        /// 获取数据
+        /// </summary>
+        /// <param name="query">查询条件</param>
+        /// <returns></returns>
+        protected override async Task<TriggerCondition> GetDataAsync(IQuery query)
+        {
+            TriggerDailyConditionEntity dailyConditionEntity = await repositoryWarehouse.GetAsync(query);
+            return dailyConditionEntity?.MapTo<TriggerDailyCondition>();
+        }
+
+        /// <summary>
+        /// 获取数据列表
+        /// </summary>
+        /// <param name="query">查询条件</param>
+        /// <returns></returns>
+        protected override async Task<List<TriggerCondition>> GetDataListAsync(IQuery query)
+        {
+            var entityList = await repositoryWarehouse.GetListAsync(query);
+            if (entityList.IsNullOrEmpty())
+            {
+                return new List<TriggerCondition>(0);
+            }
+            List<TriggerCondition> triggerConditions = new List<TriggerCondition>(entityList.Count);
+            foreach (var entity in entityList)
+            {
+                triggerConditions.Add(entity.MapTo<TriggerDailyCondition>());
+            }
+            return triggerConditions;
+        }
+
+        /// <summary>
         /// 根据执行执行计划获取附加条件
         /// </summary>
         /// <param name="triggers">执行计划</param>

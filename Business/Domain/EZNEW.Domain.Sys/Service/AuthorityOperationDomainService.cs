@@ -73,7 +73,7 @@ namespace EZNEW.Domain.Sys.Service
             {
                 return Result.FailedResult("没有指定任何要删除的信息");
             }
-            IQuery delQuery = QueryFactory.Create();
+            IQuery delQuery = QueryFactory.Create<AuthorityOperationQuery>();
             delQuery.In<AuthorityOperationQuery>(a => a.SysNo, authorityOperationIds);
             authorityOperationRepository.Remove(delQuery);
             return Result.SuccessResult("删除成功");

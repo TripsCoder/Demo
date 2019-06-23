@@ -280,6 +280,68 @@ namespace EZNEW.Domain.Sys.Model
 
         #endregion
 
+        #region 添加新的权限
+
+        /// <summary>
+        /// 添加新的权限
+        /// </summary>
+        /// <param name="newAuthoritys">新的权限信息</param>
+        public void AddAuthoritys(IEnumerable<Authority> newAuthoritys)
+        {
+            if (newAuthoritys.IsNullOrEmpty())
+            {
+                return;
+            }
+            List<Authority> nowAuthorityList = authoritys.Value ?? new List<Authority>(0);
+            foreach (var authority in newAuthoritys)
+            {
+                if (authority == null)
+                {
+                    continue;
+                }
+                var nowAuthority = nowAuthorityList.FirstOrDefault(c => c.Code == authority.Code);
+                if (nowAuthority == null)
+                {
+                    var newAuthority = authority.MapTo<Authority>();//重新生成一个对象，防止修改影响原对象的值
+                    newAuthority.MarkNew();
+                    nowAuthorityList.Add(newAuthority);
+                    continue;
+                }
+            }
+            authoritys.SetValue(nowAuthorityList, true);
+        }
+
+        #endregion
+
+        #region 移除权限
+
+        /// <summary>
+        /// 移除权限
+        /// </summary>
+        /// <param name="removeAuthoritys">要移除的权限信息</param>
+        public void RemoveAuthoritys(IEnumerable<Authority> removeAuthoritys)
+        {
+            if (removeAuthoritys.IsNullOrEmpty())
+            {
+                return;
+            }
+            List<Authority> nowAuthorityList = authoritys.Value;
+            if (nowAuthorityList.IsNullOrEmpty())
+            {
+                return;
+            }
+            foreach (var authority in removeAuthoritys)
+            {
+                if (authority == null)
+                {
+                    continue;
+                }
+                var nowAuthority = nowAuthorityList.FirstOrDefault(c => c.Code == authority.Code);
+            }
+        }
+
+        #endregion
+
         #region 初始化标识信息
 
         /// <summary>
@@ -380,19 +442,6 @@ namespace EZNEW.Domain.Sys.Model
 
         #endregion
 
-        #region 获取对象标识信息
-
-        /// <summary>
-        /// 获取对象标识信息
-        /// </summary>
-        /// <returns></returns>
-        protected override string GetIdentityValue()
-        {
-            return sysNo.ToString();
-        } 
-
-        #endregion
-
         #endregion
 
         #region 静态方法
@@ -430,6 +479,11 @@ namespace EZNEW.Domain.Sys.Model
                 ControllerCode = controllerCode,
                 ActionCode = actionCode
             };
+        }
+
+        protected override string GetIdentityValue()
+        {
+            throw new NotImplementedException();
         }
 
         #endregion
