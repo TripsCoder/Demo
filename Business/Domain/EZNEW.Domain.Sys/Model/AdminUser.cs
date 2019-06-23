@@ -143,7 +143,7 @@ namespace EZNEW.Domain.Sys.Model
             {
                 return roleList;
             }
-            var nowRoles=RoleDomainService.GetUserBindRole(sysNo);
+            var nowRoles = RoleDomainService.GetUserBindRole(sysNo);
             roleList.AddRange(nowRoles);
             roleLoaded = true;
             return roleList;
