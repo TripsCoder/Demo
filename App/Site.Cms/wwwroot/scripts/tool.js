@@ -258,7 +258,7 @@ function CreatePageControl(totalCount, currentPage, pageSize, pageListId) {
     var pagerConClass = searchOptions.selectPage ? "pager-ctrol select_pager" : "pager-ctrol";
     pagerConClass += ' row pd-0 mg-0';
     var pagerCon = GetDivByClass(pagerConClass);
-    var pcLeft = GetDivByClass("pc-left col-lg-3 col-md-3 d-md-inline-block d-sm-none d-xs-none pdl-5", pagerCon);
+    var pcLeft = GetDivByClass("pc-left col-lg-3 col-md-3 d-md-inline-block d-sm-none d-xs-none pdl-5 fs-14", pagerCon);
     var pcRight = GetDivByClass("pc-right col-lg-9 col-md-9 col-sm-12 d-inline-block txt-right pd-0", pagerCon);
     var btnUrl = "javascript:void(0)";
     //if (!isFirstPage) {
