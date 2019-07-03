@@ -10,6 +10,7 @@ using EZNEW.Data.SqlServer;
 using EZNEW.Data;
 using EZNEW.Data.Config;
 using EZNEW.Develop.CQuery;
+using EZNEW.Data.MySQL;
 
 namespace App.DBConfig
 {
