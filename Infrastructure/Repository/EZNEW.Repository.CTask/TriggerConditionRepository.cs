@@ -37,12 +37,12 @@ namespace EZNEW.Repository.CTask
 
         static TriggerConditionRepository()
         {
-            conditionTypeQueryModelDict.TryAdd(typeof(TriggerFullDateConditionQuery).GUID, TaskTriggerConditionType.固定日期);
-            conditionTypeQueryModelDict.TryAdd(typeof(TriggerAnnualConditionQuery).GUID, TaskTriggerConditionType.每年日期);
-            conditionTypeQueryModelDict.TryAdd(typeof(TriggerDailyConditionQuery).GUID, TaskTriggerConditionType.每天时间段);
-            conditionTypeQueryModelDict.TryAdd(typeof(TriggerExpressionConditionQuery).GUID, TaskTriggerConditionType.自定义);
-            conditionTypeQueryModelDict.TryAdd(typeof(TriggerMonthlyConditionQuery).GUID, TaskTriggerConditionType.每月日期);
-            conditionTypeQueryModelDict.TryAdd(typeof(TriggerWeeklyConditionQuery).GUID, TaskTriggerConditionType.星期配置);
+            conditionTypeQueryModelDict.TryAdd(typeof(TriggerFullDateConditionEntity).GUID, TaskTriggerConditionType.固定日期);
+            conditionTypeQueryModelDict.TryAdd(typeof(TriggerAnnualConditionEntity).GUID, TaskTriggerConditionType.每年日期);
+            conditionTypeQueryModelDict.TryAdd(typeof(TriggerDailyConditionEntity).GUID, TaskTriggerConditionType.每天时间段);
+            conditionTypeQueryModelDict.TryAdd(typeof(TriggerExpressionConditionEntity).GUID, TaskTriggerConditionType.自定义);
+            conditionTypeQueryModelDict.TryAdd(typeof(TriggerMonthlyConditionEntity).GUID, TaskTriggerConditionType.每月日期);
+            conditionTypeQueryModelDict.TryAdd(typeof(TriggerWeeklyConditionEntity).GUID, TaskTriggerConditionType.星期配置);
         }
 
         public TriggerConditionRepository()
@@ -310,11 +310,11 @@ namespace EZNEW.Repository.CTask
         /// <returns></returns>
         TaskTriggerConditionType? GetConditonTypeByQuery(IQuery query)
         {
-            if (query == null || query.QueryModelType == null)
+            if (query == null || query.EntityType == null)
             {
                 return null;
             }
-            if (!conditionTypeQueryModelDict.TryGetValue(query.QueryModelType.GUID, out TaskTriggerConditionType conditionType))
+            if (!conditionTypeQueryModelDict.TryGetValue(query.EntityType.GUID, out TaskTriggerConditionType conditionType))
             {
                 return null;
             }

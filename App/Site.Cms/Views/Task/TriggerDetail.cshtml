@@ -705,7 +705,7 @@
         //修改执行计划状态
         function ModifyTriggerRunState(state){
             var tipMsg=state?'计划开启后将会在服务上开始调度执行,确认开启吗?':"计划关闭后将会停止所有调度服务上的执行,确认关闭吗?";
-            var data=[{Id:'@Model.Id',State:(state?'@((int)TaskTriggerStatus.运行)':'@((int)TaskTriggerStatus.停止)')}];
+            var data = [{ Id: '@Model.Id', Status:(state?'@((int)TaskTriggerStatus.运行)':'@((int)TaskTriggerStatus.停止)')}];
             ConfirmMsg(tipMsg, function () {
                 $.post('@Url.Action("ModifyTriggerState", "Task")', { triggers:data }, function (res) {
                     ResultMsg(res);
