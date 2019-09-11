@@ -20,6 +20,7 @@ namespace App.IoC
         public static void RegisterServices(IServiceCollection services)
         {
             ContainerManager.Init(services, serviceRegisterAction: RegisterServices);
+            RepositoryConfig.Init();
         }
 
         /// <summary>
@@ -29,7 +30,6 @@ namespace App.IoC
         static void RegisterServices(IDIContainer container)
         {
             WebDependencyInjectionManager.RegisterDefaultService();
-            RepositoryConfig.Init();
         }
     }
 }

@@ -1,32 +1,23 @@
-﻿using EZNEW.Framework;
-using EZNEW.Framework.Serialize;
+﻿using EZNEW.Framework.Serialize;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Web;
 using EZNEW.Framework.Extension;
-using EZNEW.Develop.CQuery;
 using EZNEW.DTO.CTask.Cmd;
 using EZNEW.ServiceContract.CTask;
 using EZNEW.Framework.Paging;
 using EZNEW.Web.Mvc;
-using EZNEW.DTO.CTask.Query;
 using EZNEW.DTO.CTask.Query.Filter;
 using EZNEW.CTask;
-using EZNEW.CTask.Job;
-using EZNEW.CTask.Client;
 using EZNEW.ViewModel.Common;
 using EZNEW.Framework.Response;
-using System.IO;
 using Microsoft.AspNetCore.Mvc;
-using EZNEW.ViewModel.CTask;
 using EZNEW.ViewModel.CTask.Filter;
 using EZNEW.ViewModel.CTask.Response;
 using EZNEW.ViewModel.CTask.Request;
-using EZNEW.Web.Utility;
 using System.Threading.Tasks;
-using EZNEW.Framework.Net;
-using EZNEW.Framework.Net.Upload;
+using EZNEW.Web.Upload;
+using EZNEW.Framework.Upload;
 
 namespace Site.Cms.Controllers
 {
@@ -476,7 +467,7 @@ namespace Site.Cms.Controllers
 
         #region 编辑/添加工作任务
 
-        public ActionResult EditJob(EditJobViewModel job,string preGroupId)
+        public ActionResult EditJob(EditJobViewModel job, string preGroupId)
         {
             if (IsPost)
             {
@@ -593,10 +584,10 @@ namespace Site.Cms.Controllers
         {
             var file = Request.Form.Files["job_file"];
             object parameters = null;
-            var result = await WebUploadHelper.UploadByConfigAsync(new UploadFile()
+            var result = await WebUploadManager.UploadByConfigAsync(new UploadFile()
             {
                 FileName = file.FileName,
-                FileType = "ctask",
+                UploadObjectName = "ctask",
                 Rename = true,
                 Folder = DateTime.Now.ToString("yyyyMMdd")
             }, file.OpenReadStream().ToBytes(), parameters).ConfigureAwait(false);
