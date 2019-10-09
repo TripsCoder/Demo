@@ -5,7 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 
-namespace Site.Cms.Config
+namespace Site.Console.Config
 {
     /// <summary>
     /// 唯一标识符配置

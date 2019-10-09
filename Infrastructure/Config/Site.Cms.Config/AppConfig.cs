@@ -6,7 +6,7 @@ using Microsoft.Extensions.Options;
 using Microsoft.Extensions.DependencyInjection;
 using System;
 
-namespace Site.Cms.Config
+namespace Site.Console.Config
 {
     public static class AppConfig
     {

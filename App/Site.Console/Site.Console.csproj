@@ -1,0 +1,23 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <TargetFramework>netcoreapp2.2</TargetFramework>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="EZNEW.Mvc.DataAnnotationsModelValidatorConfig" Version="1.0.1" />
+    <PackageReference Include="Microsoft.AspNetCore.App" />
+    <PackageReference Include="Microsoft.AspNetCore.Razor.Design" Version="2.2.0" PrivateAssets="All" />
+    <PackageReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Design" Version="2.2.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\Infrastructure\Config\App.IoC\App.IoC.csproj" />
+    <ProjectReference Include="..\..\Infrastructure\Config\Site.Cms.Config\Site.Console.Config.csproj" />
+    <ProjectReference Include="..\..\Infrastructure\Contract\ServiceContract\EZNEW.AppServiceContract.CTask\EZNEW.AppServiceContract.CTask.csproj" />
+    <ProjectReference Include="..\..\Infrastructure\Contract\ServiceContract\EZNEW.AppServiceContract.Sys\EZNEW.AppServiceContract.Sys.csproj" />
+    <ProjectReference Include="..\..\Infrastructure\Model\Presentation\EZNEW.ViewModel.Common\EZNEW.ViewModel.Common.csproj" />
+  </ItemGroup>
+
+
+</Project>
