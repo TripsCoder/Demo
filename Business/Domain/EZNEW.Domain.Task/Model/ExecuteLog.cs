@@ -8,6 +8,7 @@ using EZNEW.Framework.Code;
 using System.Threading.Tasks;
 using EZNEW.CTask;
 using EZNEW.Application.CTask;
+using EZNEW.Framework.IoC;
 
 namespace EZNEW.Domain.CTask.Model
 {
@@ -16,6 +17,10 @@ namespace EZNEW.Domain.CTask.Model
     /// </summary>
     public class ExecuteLog : AggregationRoot<ExecuteLog>
     {
+        static IJobService jobService = ContainerManager.Resolve<IJobService>();//工作服务
+        static ITriggerService triggerService = ContainerManager.Resolve<ITriggerService>();//触发器服务
+        static IServerNodeService serverNodeService = ContainerManager.Resolve<IServerNodeService>();//服务节点服务
+
         #region	字段
 
         /// <summary>
@@ -300,7 +305,7 @@ namespace EZNEW.Domain.CTask.Model
             {
                 return job.CurrentValue;
             }
-            return JobDomainService.GetJob(job.CurrentValue.Id);
+            return jobService.GetJob(job.CurrentValue.Id);
         }
 
         #endregion
@@ -317,7 +322,7 @@ namespace EZNEW.Domain.CTask.Model
             {
                 return trigger.CurrentValue;
             }
-            return TriggerDomainService.GetTrigger(trigger.CurrentValue.Id);
+            return triggerService.GetTrigger(trigger.CurrentValue.Id);
         }
 
         #endregion
@@ -334,7 +339,7 @@ namespace EZNEW.Domain.CTask.Model
             {
                 return server.CurrentValue;
             }
-            return ServerNodeDomainService.GetServerNode(server.CurrentValue.Id);
+            return serverNodeService.GetServerNode(server.CurrentValue.Id);
         }
 
         #endregion

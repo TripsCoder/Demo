@@ -17,6 +17,7 @@ using EZNEW.Query.CTask;
 using EZNEW.Domain.CTask.Service;
 using EZNEW.DTO.CTask.Query.Filter;
 using EZNEW.Framework.Response;
+using EZNEW.Framework.IoC;
 
 namespace EZNEW.Business.CTask
 {
@@ -25,6 +26,8 @@ namespace EZNEW.Business.CTask
     /// </summary>
     public class JobGroupBusiness : IJobGroupBusiness
     {
+        IJobGroupService jobGroupService = ContainerManager.Resolve<IJobGroupService>();
+
         public JobGroupBusiness()
         {
         }
@@ -45,7 +48,7 @@ namespace EZNEW.Business.CTask
                     return Result<JobGroupDto>.FailedResult("分组信息不完整");
                 }
                 var jobGroup = jobGroupInfo.MapTo<JobGroup>();
-                JobGroupDomainService.SaveJobGroup(jobGroup);
+                jobGroupService.SaveJobGroup(jobGroup);
                 var commitResult = businessWork.Commit();
                 Result<JobGroupDto> result = null;
                 if (commitResult.ExecutedSuccess)
@@ -72,7 +75,7 @@ namespace EZNEW.Business.CTask
         /// <returns></returns>
         public JobGroupDto GetJobGroup(JobGroupFilterDto filter)
         {
-            var jobGroup = JobGroupDomainService.GetJobGroup(CreateQueryObject(filter));
+            var jobGroup = jobGroupService.GetJobGroup(CreateQueryObject(filter));
             return jobGroup.MapTo<JobGroupDto>();
         }
 
@@ -87,7 +90,7 @@ namespace EZNEW.Business.CTask
         /// <returns></returns>
         public List<JobGroupDto> GetJobGroupList(JobGroupFilterDto filter)
         {
-            var jobGroupList = JobGroupDomainService.GetJobGroupList(CreateQueryObject(filter));
+            var jobGroupList = jobGroupService.GetJobGroupList(CreateQueryObject(filter));
             return jobGroupList.Select(c => c.MapTo<JobGroupDto>()).ToList();
         }
 
@@ -102,7 +105,7 @@ namespace EZNEW.Business.CTask
         /// <returns></returns>
         public IPaging<JobGroupDto> GetJobGroupPaging(JobGroupFilterDto filter)
         {
-            var jobGroupPaging = JobGroupDomainService.GetJobGroupPaging(CreateQueryObject(filter));
+            var jobGroupPaging = jobGroupService.GetJobGroupPaging(CreateQueryObject(filter));
             return jobGroupPaging.ConvertTo<JobGroupDto>();
         }
 
@@ -129,7 +132,7 @@ namespace EZNEW.Business.CTask
                 #endregion
 
                 //删除逻辑
-                JobGroupDomainService.DeleteJobGroup(deleteInfo.JobGroupIds);
+                jobGroupService.DeleteJobGroup(deleteInfo.JobGroupIds);
                 var commitResult = businessWork.Commit();
                 return commitResult.ExecutedSuccess ? Result.SuccessResult("删除成功") : Result.FailedResult("删除失败");
             }

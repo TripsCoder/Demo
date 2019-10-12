@@ -17,6 +17,7 @@ using EZNEW.Domain.CTask.Model;
 using EZNEW.Develop.UnitOfWork;
 using EZNEW.Framework.Response;
 using EZNEW.Domain.CTask.Service;
+using EZNEW.Framework.IoC;
 
 namespace EZNEW.Business.CTask
 {
@@ -25,6 +26,8 @@ namespace EZNEW.Business.CTask
     /// </summary>
     public class JobFileBusiness : IJobFileBusiness
     {
+        IJobFileService jobFileService = ContainerManager.Resolve<IJobFileService>();
+
         public JobFileBusiness()
         {
         }
@@ -44,7 +47,7 @@ namespace EZNEW.Business.CTask
             }
             using (var businessWork = WorkFactory.Create())
             {
-                var saveResult = JobFileDomainService.SaveJobFile(saveInfo.JobFile.MapTo<JobFile>());
+                var saveResult = jobFileService.SaveJobFile(saveInfo.JobFile.MapTo<JobFile>());
                 if (!saveResult.Success)
                 {
                     return Result<JobFileDto>.FailedResult(saveResult.Message);
@@ -75,7 +78,7 @@ namespace EZNEW.Business.CTask
         /// <returns></returns>
         public JobFileDto GetJobFile(JobFileFilterDto filter)
         {
-            var jobFile = JobFileDomainService.GetJobFile(CreateQueryObject(filter));
+            var jobFile = jobFileService.GetJobFile(CreateQueryObject(filter));
             return jobFile.MapTo<JobFileDto>();
         }
 
@@ -90,7 +93,7 @@ namespace EZNEW.Business.CTask
         /// <returns></returns>
         public List<JobFileDto> GetJobFileList(JobFileFilterDto filter)
         {
-            var jobFileList = JobFileDomainService.GetJobFileList(CreateQueryObject(filter));
+            var jobFileList = jobFileService.GetJobFileList(CreateQueryObject(filter));
             return jobFileList.Select(c => c.MapTo<JobFileDto>()).ToList();
         }
 
@@ -105,7 +108,7 @@ namespace EZNEW.Business.CTask
         /// <returns></returns>
         public IPaging<JobFileDto> GetJobFilePaging(JobFileFilterDto filter)
         {
-            var jobFilePaging = JobFileDomainService.GetJobFilePaging(CreateQueryObject(filter));
+            var jobFilePaging = jobFileService.GetJobFilePaging(CreateQueryObject(filter));
             return jobFilePaging.ConvertTo<JobFileDto>();
         }
 
@@ -132,7 +135,7 @@ namespace EZNEW.Business.CTask
             using (var businessWork = WorkFactory.Create())
             {
                 var jobFiles = deleteInfo.JobFileIds.Select(c => JobFile.CreateJobFile(c));
-                var deleteResult = JobFileDomainService.DeleteJobFile(jobFiles);
+                var deleteResult = jobFileService.DeleteJobFile(jobFiles);
                 if (!deleteResult.Success)
                 {
                     return deleteResult;

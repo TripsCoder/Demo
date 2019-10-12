@@ -17,6 +17,7 @@ using EZNEW.Domain.CTask.Model;
 using EZNEW.Develop.UnitOfWork;
 using EZNEW.Domain.CTask.Service;
 using EZNEW.Framework.Response;
+using EZNEW.Framework.IoC;
 
 namespace EZNEW.Business.CTask
 {
@@ -25,6 +26,8 @@ namespace EZNEW.Business.CTask
     /// </summary>
     public class TriggerServerBusiness : ITriggerServerBusiness
     {
+        ITriggerServerService triggerServerService = ContainerManager.Resolve<ITriggerServerService>();
+
         public TriggerServerBusiness()
         {
         }
@@ -38,7 +41,7 @@ namespace EZNEW.Business.CTask
         /// <returns></returns>
         public TriggerServerDto GetTriggerServer(TriggerServerFilterDto filter)
         {
-            var triggerServer = TriggerServerDomainService.GetTriggerServer(CreateQueryObject(filter));
+            var triggerServer = triggerServerService.GetTriggerServer(CreateQueryObject(filter));
             return triggerServer.MapTo<TriggerServerDto>();
         }
 
@@ -53,7 +56,7 @@ namespace EZNEW.Business.CTask
         /// <returns></returns>
         public List<TriggerServerDto> GetTriggerServerList(TriggerServerFilterDto filter)
         {
-            var triggerServerList = TriggerServerDomainService.GetTriggerServerList(CreateQueryObject(filter));
+            var triggerServerList = triggerServerService.GetTriggerServerList(CreateQueryObject(filter));
             return triggerServerList.Select(c => c.MapTo<TriggerServerDto>()).ToList();
         }
 
@@ -68,7 +71,7 @@ namespace EZNEW.Business.CTask
         /// <returns></returns>
         public IPaging<TriggerServerDto> GetTriggerServerPaging(TriggerServerFilterDto filter)
         {
-            var triggerServerPaging = TriggerServerDomainService.GetTriggerServerPaging(CreateQueryObject(filter));
+            var triggerServerPaging = triggerServerService.GetTriggerServerPaging(CreateQueryObject(filter));
             return triggerServerPaging.ConvertTo<TriggerServerDto>();
         }
 
@@ -94,7 +97,7 @@ namespace EZNEW.Business.CTask
 
                 #endregion
 
-                TriggerServerDomainService.DeleteTriggerServer(deleteInfo.TriggerServers.Select(c => c.MapTo<TriggerServer>()));
+                triggerServerService.DeleteTriggerServer(deleteInfo.TriggerServers.Select(c => c.MapTo<TriggerServer>()));
                 var commitResult = businessWork.Commit();
                 return commitResult.ExecutedSuccess ? Result.SuccessResult("删除成功") : Result.FailedResult("删除失败");
             }
@@ -117,7 +120,7 @@ namespace EZNEW.Business.CTask
                 {
                     return Result.FailedResult("没有指定要修改的信息");
                 }
-                TriggerServerDomainService.ModifyRunState(stateInfo.TriggerServers.Select(c => c.MapTo<TriggerServer>()));
+                triggerServerService.ModifyRunState(stateInfo.TriggerServers.Select(c => c.MapTo<TriggerServer>()));
                 var commitResult = businessWork.Commit();
                 return commitResult.ExecutedSuccess ? Result.SuccessResult("修改成功") : Result.FailedResult("修改失败");
             }
@@ -140,7 +143,7 @@ namespace EZNEW.Business.CTask
                 {
                     return Result.FailedResult("没有指定任何要保存的信息");
                 }
-                TriggerServerDomainService.SaveTriggerServer(saveInfo.TriggerServers.Select(c => c.MapTo<TriggerServer>()));
+                triggerServerService.SaveTriggerServer(saveInfo.TriggerServers.Select(c => c.MapTo<TriggerServer>()));
                 var commitResult = businessWork.Commit();
                 return commitResult.EmptyResultOrSuccess ? Result.SuccessResult("保存成功") : Result.FailedResult("保存失败");
             }

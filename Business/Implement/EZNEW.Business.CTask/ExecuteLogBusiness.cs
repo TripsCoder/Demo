@@ -16,6 +16,7 @@ using EZNEW.Domain.CTask.Model;
 using EZNEW.Develop.UnitOfWork;
 using EZNEW.Domain.CTask.Service;
 using EZNEW.Framework.Response;
+using EZNEW.Framework.IoC;
 
 namespace EZNEW.Business.CTask
 {
@@ -24,6 +25,8 @@ namespace EZNEW.Business.CTask
     /// </summary>
     public class ExecuteLogBusiness : IExecuteLogBusiness
     {
+        IExecuteLogService executeLogService = ContainerManager.Resolve<IExecuteLogService>();
+
         public ExecuteLogBusiness()
         {
         }
@@ -44,7 +47,7 @@ namespace EZNEW.Business.CTask
             List<ExecuteLog> logs = saveInfo.ExecuteLogs.Select(c =>c.MapTo<ExecuteLog>()).ToList();
             using (var businessWork = WorkFactory.Create())
             {
-                ExecuteLogDomainService.SaveExecuteLog(logs);
+                executeLogService.SaveExecuteLog(logs);
                 var commitResult = businessWork.Commit();
                 if (commitResult.ExecutedSuccess)
                 {
@@ -65,7 +68,7 @@ namespace EZNEW.Business.CTask
         /// <returns></returns>
         public ExecuteLogDto GetExecuteLog(ExecuteLogFilterDto filter)
         {
-            var executeLog = ExecuteLogDomainService.GetExecuteLog(CreateQueryObject(filter));
+            var executeLog = executeLogService.GetExecuteLog(CreateQueryObject(filter));
             return executeLog.MapTo<ExecuteLogDto>();
         }
 
@@ -80,7 +83,7 @@ namespace EZNEW.Business.CTask
         /// <returns></returns>
         public List<ExecuteLogDto> GetExecuteLogList(ExecuteLogFilterDto filter)
         {
-            var executeLogList = ExecuteLogDomainService.GetExecuteLogList(CreateQueryObject(filter));
+            var executeLogList = executeLogService.GetExecuteLogList(CreateQueryObject(filter));
             return executeLogList.Select(c => c.MapTo<ExecuteLogDto>()).ToList();
         }
 
@@ -95,7 +98,7 @@ namespace EZNEW.Business.CTask
         /// <returns></returns>
         public IPaging<ExecuteLogDto> GetExecuteLogPaging(ExecuteLogFilterDto filter)
         {
-            var executeLogPaging = ExecuteLogDomainService.GetExecuteLogPaging(CreateQueryObject(filter));
+            var executeLogPaging = executeLogService.GetExecuteLogPaging(CreateQueryObject(filter));
             return executeLogPaging.ConvertTo<ExecuteLogDto>();
         }
 

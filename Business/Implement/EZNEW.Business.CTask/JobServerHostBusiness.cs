@@ -17,6 +17,7 @@ using EZNEW.Domain.CTask.Service;
 using EZNEW.DTO.CTask.Query.Filter;
 using EZNEW.Query.CTask;
 using EZNEW.Framework.Response;
+using EZNEW.Framework.IoC;
 
 namespace EZNEW.Business.CTask
 {
@@ -25,6 +26,8 @@ namespace EZNEW.Business.CTask
     /// </summary>
     public class JobServerHostBusiness : IJobServerHostBusiness
     {
+        IJobServerHostService jobServerHostService = ContainerManager.Resolve<IJobServerHostService>();
+
         public JobServerHostBusiness()
         {
         }
@@ -44,8 +47,8 @@ namespace EZNEW.Business.CTask
                 {
                     return Result.FailedResult("工作承载保存信息为空");
                 }
-                List<JobServerHost> jobServerHostList = saveInfo.JobServerHosts.Select(c => { var jobServer = JobServerHost.CreateJobServerHost(c.Job?.Id, c.Server?.Id);jobServer.RunStatus = c.RunStatus;return jobServer; }).ToList();
-                JobServerHostDomainService.SaveJobServerHost(jobServerHostList);
+                List<JobServerHost> jobServerHostList = saveInfo.JobServerHosts.Select(c => { var jobServer = JobServerHost.CreateJobServerHost(c.Job?.Id, c.Server?.Id); jobServer.RunStatus = c.RunStatus; return jobServer; }).ToList();
+                jobServerHostService.SaveJobServerHost(jobServerHostList);
                 var commitResult = businessWork.Commit();
                 var result = commitResult.ExecutedSuccess ? Result.SuccessResult("保存成功") : Result.FailedResult("保存失败");
                 return result;
@@ -63,7 +66,7 @@ namespace EZNEW.Business.CTask
         /// <returns></returns>
         public JobServerHostDto GetJobServerHost(JobServerHostFilterDto filter)
         {
-            var jobServerHost = JobServerHostDomainService.GetJobServerHost(CreateQueryObject(filter));
+            var jobServerHost = jobServerHostService.GetJobServerHost(CreateQueryObject(filter));
             return jobServerHost.MapTo<JobServerHostDto>();
         }
 
@@ -78,7 +81,7 @@ namespace EZNEW.Business.CTask
         /// <returns></returns>
         public List<JobServerHostDto> GetJobServerHostList(JobServerHostFilterDto filter)
         {
-            var jobServerHostList = JobServerHostDomainService.GetJobServerHostList(CreateQueryObject(filter));
+            var jobServerHostList = jobServerHostService.GetJobServerHostList(CreateQueryObject(filter));
             return jobServerHostList.Select(c => c.MapTo<JobServerHostDto>()).ToList();
         }
 
@@ -93,7 +96,7 @@ namespace EZNEW.Business.CTask
         /// <returns></returns>
         public IPaging<JobServerHostDto> GetJobServerHostPaging(JobServerHostFilterDto filter)
         {
-            var jobServerHostPaging = JobServerHostDomainService.GetJobServerHostPaging(CreateQueryObject(filter));
+            var jobServerHostPaging = jobServerHostService.GetJobServerHostPaging(CreateQueryObject(filter));
             return jobServerHostPaging.ConvertTo<JobServerHostDto>();
         }
 
@@ -115,7 +118,7 @@ namespace EZNEW.Business.CTask
                     return Result.FailedResult("没有指定要删除的信息");
                 }
                 List<JobServerHost> serverHosts = deleteInfo.JobServerHosts.Select(c => JobServerHost.CreateJobServerHost(c.Job?.Id, c.Server?.Id)).ToList();
-                JobServerHostDomainService.DeleteJobServerHost(serverHosts);
+                jobServerHostService.DeleteJobServerHost(serverHosts);
                 var commitResult = businessWork.Commit();
                 var result = commitResult.ExecutedSuccess ? Result.SuccessResult("删除成功") : Result.FailedResult("删除失败");
                 return result;
@@ -140,7 +143,7 @@ namespace EZNEW.Business.CTask
                     return Result.FailedResult("没有指定要修改的信息");
                 }
                 var jobServerHostList = modifyInfo.JobServerHosts.Select(c => c.MapTo<JobServerHost>());
-                JobServerHostDomainService.ModifyRunState(jobServerHostList);
+                jobServerHostService.ModifyRunState(jobServerHostList);
                 var commitResult = businessWork.Commit();
                 var result = commitResult.ExecutedSuccess ? Result.SuccessResult("修改成功") : Result.FailedResult("修改失败");
                 return result;
@@ -178,14 +181,14 @@ namespace EZNEW.Business.CTask
             if (!filter.ServerKey.IsNullOrEmpty())
             {
                 IQuery serverQuery = QueryFactory.Create<ServerNodeQuery>();
-                serverQuery.And<ServerNodeQuery>(QueryOperator.OR, CriteriaOperator.Like, filter.ServerKey,null,c => c.Name, c => c.Host);
+                serverQuery.And<ServerNodeQuery>(QueryOperator.OR, CriteriaOperator.Like, filter.ServerKey, null, c => c.Name, c => c.Host);
                 serverQuery.AddQueryFields<ServerNodeQuery>(c => c.Id);
                 query.And<JobServerHostQuery>(c => c.Server, CriteriaOperator.In, serverQuery);
             }
             if (!filter.JobKey.IsNullOrEmpty())
             {
                 IQuery jobQuery = QueryFactory.Create<JobQuery>();
-                jobQuery.And<JobQuery>(QueryOperator.OR, CriteriaOperator.Like, filter.JobKey,null,c => c.Name);
+                jobQuery.And<JobQuery>(QueryOperator.OR, CriteriaOperator.Like, filter.JobKey, null, c => c.Name);
                 jobQuery.AddQueryFields<JobQuery>(c => c.Id);
                 query.And<JobServerHostQuery>(c => c.Job, CriteriaOperator.In, jobQuery);
             }

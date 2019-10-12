@@ -12,13 +12,14 @@ using EZNEW.Framework;
 using EZNEW.Domain.Sys.Service;
 using EZNEW.Domain.Sys.Repository;
 using EZNEW.DTO.Sys.Query;
-using EZNEW.Domain.Sys.Service.Request;
+using EZNEW.Domain.Sys.Service.Param;
 using EZNEW.DTO.Sys.Query.Filter;
 using EZNEW.Query.Sys;
 using EZNEW.BusinessContract.Sys;
 using EZNEW.DTO.Sys;
 using EZNEW.Domain.Sys.Model;
 using EZNEW.DTO.Sys.Cmd;
+using EZNEW.Framework.IoC;
 
 namespace EZNEW.Business.Sys
 {
@@ -27,6 +28,9 @@ namespace EZNEW.Business.Sys
     /// </summary>
     public class UserBusiness : IUserBusiness
     {
+        static IUserService userService = ContainerManager.Resolve<IUserService>();
+        static IUserRoleService userRoleService = ContainerManager.Resolve<IUserRoleService>();
+
         public UserBusiness()
         {
         }
@@ -47,7 +51,7 @@ namespace EZNEW.Business.Sys
             using (var businessWork = WorkFactory.Create())
             {
                 var user = saveInfo.User.MapTo<User>();
-                var userSaveResult = UserDomainService.SaveUser(user);
+                var userSaveResult = userService.SaveUser(user);
                 if (!userSaveResult.Success)
                 {
                     return Result<UserDto>.FailedResult(userSaveResult.Message);
@@ -79,7 +83,7 @@ namespace EZNEW.Business.Sys
         public UserDto GetUser(UserFilterDto filter)
         {
             IQuery query = CreateQueryObject(filter);
-            return UserDomainService.GetUser(query).MapTo<UserDto>();
+            return userService.GetUser(query).MapTo<UserDto>();
         }
 
         #endregion
@@ -93,7 +97,7 @@ namespace EZNEW.Business.Sys
         /// <returns></returns>
         public List<UserDto> GetUserList(UserFilterDto filter)
         {
-            var userList = UserDomainService.GetUserList(CreateQueryObject(filter));
+            var userList = userService.GetUserList(CreateQueryObject(filter));
             return userList.Select(c => c.MapTo<UserDto>()).ToList();
         }
 
@@ -108,7 +112,7 @@ namespace EZNEW.Business.Sys
         /// <returns></returns>
         public IPaging<UserDto> GetUserPaging(UserFilterDto filter)
         {
-            var userPaging = UserDomainService.GetUserPaging(CreateQueryObject(filter));
+            var userPaging = userService.GetUserPaging(CreateQueryObject(filter));
             return userPaging.ConvertTo<UserDto>();
         }
 
@@ -129,7 +133,7 @@ namespace EZNEW.Business.Sys
             }
             using (var businessWork = WorkFactory.Create())
             {
-                var deleteResult = UserDomainService.DeleteUser(deleteInfo.UserIds);
+                var deleteResult = userService.DeleteUser(deleteInfo.UserIds);
                 if (!deleteResult.Success)
                 {
                     return deleteResult;
@@ -154,7 +158,7 @@ namespace EZNEW.Business.Sys
             {
                 return Result<UserDto>.FailedResult("用户登录信息为空");
             }
-            var loginResult = UserDomainService.Login(new UserLogin()
+            var loginResult = userService.Login(new UserLogin()
             {
                 UserName = userDto.UserName,
                 Pwd = userDto.Pwd
@@ -190,7 +194,7 @@ namespace EZNEW.Business.Sys
 
                 #endregion
 
-                var modifyResult = UserDomainService.ModifyPassword(modifyInfo.MapTo<ModifyUserPassword>());
+                var modifyResult = userService.ModifyPassword(modifyInfo.MapTo<ModifyUserPassword>());
                 if (!modifyResult.Success)
                 {
                     return modifyResult;
@@ -217,7 +221,7 @@ namespace EZNEW.Business.Sys
                 {
                     return Result.FailedResult("没有指定要修改状态的用户信息");
                 }
-                var modifyResult = UserDomainService.ModifyStatus(new UserStatusInfo()
+                var modifyResult = userService.ModifyStatus(new UserStatusInfo()
                 {
                     UserId = statusInfo.UserId,
                     Status = statusInfo.Status
@@ -250,12 +254,12 @@ namespace EZNEW.Business.Sys
                 //解绑
                 if (!bindInfo.UnBinds.IsNullOrEmpty())
                 {
-                    UserRoleDomainService.UnBindUserAndRole(bindInfo.UnBinds.Select(c => new Tuple<User, Role>(User.CreateUser(c.Item1?.SysNo ?? 0), Role.CreateRole(c.Item2?.SysNo ?? 0))).ToArray());
+                    userRoleService.UnBindUserAndRole(bindInfo.UnBinds.Select(c => new Tuple<User, Role>(User.CreateUser(c.Item1?.SysNo ?? 0), Role.CreateRole(c.Item2?.SysNo ?? 0))).ToArray());
                 }
                 //绑定
                 if (!bindInfo.Binds.IsNullOrEmpty())
                 {
-                    UserRoleDomainService.BindUserAndRole(bindInfo.Binds.Select(c => new Tuple<User, Role>(User.CreateUser(c.Item1?.SysNo ?? 0), Role.CreateRole(c.Item2?.SysNo ?? 0))).ToArray());
+                    userRoleService.BindUserAndRole(bindInfo.Binds.Select(c => new Tuple<User, Role>(User.CreateUser(c.Item1?.SysNo ?? 0), Role.CreateRole(c.Item2?.SysNo ?? 0))).ToArray());
                 }
 
                 var commitResult = businessWork.Commit();

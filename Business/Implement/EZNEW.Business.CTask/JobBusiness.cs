@@ -17,6 +17,7 @@ using EZNEW.Query.CTask;
 using EZNEW.DTO.CTask.Query.Filter;
 using EZNEW.Domain.CTask.Service;
 using EZNEW.Framework.Response;
+using EZNEW.Framework.IoC;
 
 namespace EZNEW.Business.CTask
 {
@@ -25,6 +26,8 @@ namespace EZNEW.Business.CTask
     /// </summary>
     public class JobBusiness : IJobBusiness
     {
+        IJobService jobService = ContainerManager.Resolve<IJobService>();
+
         public JobBusiness()
         {
         }
@@ -45,7 +48,7 @@ namespace EZNEW.Business.CTask
                     return Result<JobDto>.FailedResult("任务保存信息不完整");
                 }
                 var job = saveInfo.Job.MapTo<Job>();
-                JobDomainService.SaveJob(job);
+                jobService.SaveJob(job);
                 Result<JobDto> result = null;
                 var commitResult = businessWork.Commit();
                 if (commitResult.ExecutedSuccess)
@@ -72,7 +75,7 @@ namespace EZNEW.Business.CTask
         /// <returns></returns>
         public JobDto GetJob(JobFilterDto filter)
         {
-            var job = JobDomainService.GetJob(CreateQueryObject(filter));
+            var job = jobService.GetJob(CreateQueryObject(filter));
             return job.MapTo<JobDto>();
         }
 
@@ -87,7 +90,7 @@ namespace EZNEW.Business.CTask
         /// <returns></returns>
         public List<JobDto> GetJobList(JobFilterDto filter)
         {
-            var jobList = JobDomainService.GetJobList(CreateQueryObject(filter));
+            var jobList = jobService.GetJobList(CreateQueryObject(filter));
             return jobList.Select(c => c.MapTo<JobDto>()).ToList();
         }
 
@@ -102,7 +105,7 @@ namespace EZNEW.Business.CTask
         /// <returns></returns>
         public IPaging<JobDto> GetJobPaging(JobFilterDto filter)
         {
-            var jobPaging = JobDomainService.GetJobPaging(CreateQueryObject(filter));
+            var jobPaging = jobService.GetJobPaging(CreateQueryObject(filter));
             return jobPaging.ConvertTo<JobDto>();
         }
 
@@ -129,7 +132,7 @@ namespace EZNEW.Business.CTask
                 #endregion
 
                 //删除逻辑
-                JobDomainService.DeleteJob(deleteInfo.JobIds);
+                jobService.DeleteJob(deleteInfo.JobIds);
                 var commitResult = businessWork.Commit();
                 return commitResult.ExecutedSuccess ? Result.SuccessResult("删除成功") : Result.FailedResult("删除失败");
             }
@@ -152,7 +155,7 @@ namespace EZNEW.Business.CTask
             }
             using (var businessWork = WorkFactory.Create())
             {
-                JobDomainService.ModifyJobRunState(stateInfo.Jobs.Select(c => c.MapTo<Job>()));
+                jobService.ModifyJobRunState(stateInfo.Jobs.Select(c => c.MapTo<Job>()));
                 var commitResult = businessWork.Commit();
                 Result result = commitResult.ExecutedSuccess ? Result.SuccessResult("修改成功") : Result.FailedResult("修改失败");
                 return result;

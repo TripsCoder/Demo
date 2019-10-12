@@ -15,6 +15,7 @@ using System.Linq;
 using EZNEW.Framework.ExpressionUtil;
 using EZNEW.Framework.Code;
 using System.Threading.Tasks;
+using EZNEW.Framework.IoC;
 
 namespace EZNEW.Domain.CTask.Model
 {
@@ -23,6 +24,8 @@ namespace EZNEW.Domain.CTask.Model
     /// </summary>
     public class Trigger : AggregationRoot<Trigger>
     {
+        static ITriggerConditionService triggerConditionService = ContainerManager.Resolve<ITriggerConditionService>();//触发计划条件
+
         #region	字段
 
         /// <summary>
@@ -469,7 +472,7 @@ namespace EZNEW.Domain.CTask.Model
             {
                 return condition.CurrentValue;
             }
-            return TriggerConditionDomainService.GetTriggerConditionByTrigger(id, condition.CurrentValue.Type);
+            return triggerConditionService.GetTriggerConditionByTrigger(id, condition.CurrentValue.Type);
         }
 
         #endregion

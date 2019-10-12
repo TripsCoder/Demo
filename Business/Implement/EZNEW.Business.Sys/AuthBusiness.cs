@@ -11,13 +11,14 @@ using EZNEW.Framework.Response;
 using EZNEW.Develop.UnitOfWork;
 using EZNEW.Domain.Sys.Model;
 using EZNEW.Domain.Sys.Service;
-using EZNEW.Domain.Sys.Service.Request;
+using EZNEW.Domain.Sys.Service.Param;
 using EZNEW.DTO.Sys.Query.Filter;
 using EZNEW.Query.Sys;
 using EZNEW.DTO.Sys.Cmd;
 using EZNEW.DTO.Sys.Query;
 using EZNEW.Domain.Sys.Repository;
 using EZNEW.BusinessContract.Sys;
+using EZNEW.Framework.IoC;
 
 namespace EZNEW.Business.Sys
 {
@@ -26,6 +27,13 @@ namespace EZNEW.Business.Sys
     /// </summary>
     public class AuthBusiness : IAuthBusiness
     {
+        static IAuthorityService authorityService = ContainerManager.Resolve<IAuthorityService>();
+        static IAuthorityGroupService authorityGroupService = ContainerManager.Resolve<IAuthorityGroupService>();
+        static IAuthorityOperationGroupService authorityOperationGroupService = ContainerManager.Resolve<IAuthorityOperationGroupService>();
+        static IAuthorityOperationService authorityOperationService = ContainerManager.Resolve<IAuthorityOperationService>();
+        static IAuthorityBindAuthorityOperationService authorityBindAuthorityOperationService = ContainerManager.Resolve<IAuthorityBindAuthorityOperationService>();
+        static IAuthorizeService authorizeService = ContainerManager.Resolve<IAuthorizeService>();
+
         public AuthBusiness()
         {
         }
@@ -50,7 +58,7 @@ namespace EZNEW.Business.Sys
 
                 #region 保存权限数据
 
-                var authSaveResult = AuthorityDomainService.SaveAuthority(saveInfo.Authority.MapTo<Authority>());
+                var authSaveResult = authorityService.SaveAuthority(saveInfo.Authority.MapTo<Authority>());
                 if (!authSaveResult.Success)
                 {
                     return Result<AuthorityDto>.FailedResult(authSaveResult.Message);
@@ -84,7 +92,7 @@ namespace EZNEW.Business.Sys
         /// <returns></returns>
         public AuthorityDto GetAuthority(AuthorityFilterDto filter)
         {
-            var authority = AuthorityDomainService.GetAuthority(CreateAuthorityQueryObject(filter));
+            var authority = authorityService.GetAuthority(CreateAuthorityQueryObject(filter));
             return authority.MapTo<AuthorityDto>();
         }
 
@@ -99,7 +107,7 @@ namespace EZNEW.Business.Sys
         /// <returns></returns>
         public List<AuthorityDto> GetAuthorityList(AuthorityFilterDto filter)
         {
-            var authorityList = AuthorityDomainService.GetAuthorityList(CreateAuthorityQueryObject(filter));
+            var authorityList = authorityService.GetAuthorityList(CreateAuthorityQueryObject(filter));
             return authorityList.Select(c => c.MapTo<AuthorityDto>()).ToList();
         }
 
@@ -114,7 +122,7 @@ namespace EZNEW.Business.Sys
         /// <returns></returns>
         public IPaging<AuthorityDto> GetAuthorityPaging(AuthorityFilterDto filter)
         {
-            var authorityPaging = AuthorityDomainService.GetAuthorityPaging(CreateAuthorityQueryObject(filter));
+            var authorityPaging = authorityService.GetAuthorityPaging(CreateAuthorityQueryObject(filter));
             return authorityPaging.ConvertTo<AuthorityDto>();
         }
 
@@ -140,7 +148,7 @@ namespace EZNEW.Business.Sys
 
                 #endregion
 
-                AuthorityDomainService.DeleteAuthority(deleteInfo.AuthorityCodes);
+                authorityService.DeleteAuthority(deleteInfo.AuthorityCodes);
                 var exectVal = businessWork.Commit();
                 return exectVal.ExecutedSuccess ? Result.SuccessResult("删除成功") : Result.FailedResult("删除失败");
             }
@@ -172,7 +180,7 @@ namespace EZNEW.Business.Sys
                         Status = statusItem.Value
                     });
                 }
-                var modifyResult = AuthorityDomainService.ModifyAuthorityStatus(modifyStatusList.ToArray());
+                var modifyResult = authorityService.ModifyAuthorityStatus(modifyStatusList.ToArray());
                 if (!modifyResult.Success)
                 {
                     return modifyResult;
@@ -193,11 +201,11 @@ namespace EZNEW.Business.Sys
         /// <returns></returns>
         public bool ExistAuthorityCode(ExistAuthorityCodeCmdDto codeInfo)
         {
-            if (codeInfo==null)
+            if (codeInfo == null)
             {
                 return false;
             }
-            return AuthorityDomainService.ExistAuthorityCode(codeInfo.AuthCode);
+            return authorityService.ExistAuthorityCode(codeInfo.AuthCode);
         }
 
         #endregion
@@ -211,11 +219,11 @@ namespace EZNEW.Business.Sys
         /// <returns></returns>
         public bool ExistAuthorityName(ExistAuthorityNameCmdDto nameInfo)
         {
-            if (nameInfo==null)
+            if (nameInfo == null)
             {
                 return false;
             }
-            return AuthorityDomainService.ExistAuthorityName(nameInfo.Name, nameInfo.ExcludeCode);
+            return authorityService.ExistAuthorityName(nameInfo.Name, nameInfo.ExcludeCode);
         }
 
         #endregion
@@ -239,7 +247,7 @@ namespace EZNEW.Business.Sys
             }
             using (var businessWork = WorkFactory.Create())
             {
-                var saveResult = AuthorityGroupDomainService.SaveAuthorityGroup(saveInfo.AuthorityGroup.MapTo<AuthorityGroup>());
+                var saveResult = authorityGroupService.SaveAuthorityGroup(saveInfo.AuthorityGroup.MapTo<AuthorityGroup>());
                 if (!saveResult.Success)
                 {
                     return Result<AuthorityGroupDto>.FailedResult(saveResult.Message);
@@ -270,7 +278,7 @@ namespace EZNEW.Business.Sys
         /// <returns></returns>
         public AuthorityGroupDto GetAuthorityGroup(AuthorityGroupFilterDto filter)
         {
-            var authorityGroup = AuthorityGroupDomainService.GetAuthorityGroup(CreateAuthorityGroupQueryObject(filter));
+            var authorityGroup = authorityGroupService.GetAuthorityGroup(CreateAuthorityGroupQueryObject(filter));
             return authorityGroup.MapTo<AuthorityGroupDto>();
         }
 
@@ -285,7 +293,7 @@ namespace EZNEW.Business.Sys
         /// <returns></returns>
         public List<AuthorityGroupDto> GetAuthorityGroupList(AuthorityGroupFilterDto filter)
         {
-            var authorityGroupList = AuthorityGroupDomainService.GetAuthorityGroupList(CreateAuthorityGroupQueryObject(filter));
+            var authorityGroupList = authorityGroupService.GetAuthorityGroupList(CreateAuthorityGroupQueryObject(filter));
             return authorityGroupList.Select(c => c.MapTo<AuthorityGroupDto>()).ToList();
         }
 
@@ -300,7 +308,7 @@ namespace EZNEW.Business.Sys
         /// <returns></returns>
         public IPaging<AuthorityGroupDto> GetAuthorityGroupPaging(AuthorityGroupFilterDto filter)
         {
-            var authorityGroupPaging = AuthorityGroupDomainService.GetAuthorityGroupPaging(CreateAuthorityGroupQueryObject(filter));
+            var authorityGroupPaging = authorityGroupService.GetAuthorityGroupPaging(CreateAuthorityGroupQueryObject(filter));
             return authorityGroupPaging.ConvertTo<AuthorityGroupDto>();
         }
 
@@ -326,7 +334,7 @@ namespace EZNEW.Business.Sys
 
                 #endregion
 
-                var result=AuthorityGroupDomainService.RemoveAuthorityGroup(deleteInfo.AuthorityGroupIds);
+                var result = authorityGroupService.RemoveAuthorityGroup(deleteInfo.AuthorityGroupIds);
                 if (!result.Success)
                 {
                     return result;
@@ -360,7 +368,7 @@ namespace EZNEW.Business.Sys
 
                 #region 修改分组状态信息
 
-                var modifyResult = AuthorityGroupDomainService.ModifyAuthorityGroupSort(sortIndexInfo.AuthorityGroupSysNo, sortIndexInfo.NewSortIndex);
+                var modifyResult = authorityGroupService.ModifyAuthorityGroupSort(sortIndexInfo.AuthorityGroupSysNo, sortIndexInfo.NewSortIndex);
                 if (!modifyResult.Success)
                 {
                     return modifyResult;
@@ -388,7 +396,7 @@ namespace EZNEW.Business.Sys
             {
                 return false;
             }
-            return AuthorityGroupDomainService.ExistGroupName(existInfo.GroupName, existInfo.ExcludeGroupId);
+            return authorityGroupService.ExistGroupName(existInfo.GroupName, existInfo.ExcludeGroupId);
         }
 
         #endregion
@@ -412,7 +420,7 @@ namespace EZNEW.Business.Sys
             }
             using (var businessWork = WorkFactory.Create())
             {
-                var saveResult = AuthorityOperationGroupDomainService.SaveAuthorityOperationGroup(saveInfo.AuthorityOperationGroup.MapTo<AuthorityOperationGroup>());
+                var saveResult = authorityOperationGroupService.SaveAuthorityOperationGroup(saveInfo.AuthorityOperationGroup.MapTo<AuthorityOperationGroup>());
                 if (!saveResult.Success)
                 {
                     return Result<AuthorityOperationGroupDto>.FailedResult(saveResult.Message);
@@ -444,7 +452,7 @@ namespace EZNEW.Business.Sys
         /// <returns></returns>
         public AuthorityOperationGroupDto GetAuthorityOperationGroup(AuthorityOperationGroupFilterDto filter)
         {
-            var authorityOperationGroup = AuthorityOperationGroupDomainService.GetAuthorityOperationGroup(CreateAuthorityOperationGroupQueryObject(filter));
+            var authorityOperationGroup = authorityOperationGroupService.GetAuthorityOperationGroup(CreateAuthorityOperationGroupQueryObject(filter));
             return authorityOperationGroup.MapTo<AuthorityOperationGroupDto>();
         }
 
@@ -459,7 +467,7 @@ namespace EZNEW.Business.Sys
         /// <returns></returns>
         public List<AuthorityOperationGroupDto> GetAuthorityOperationGroupList(AuthorityOperationGroupFilterDto filter)
         {
-            var authorityOperationGroupList = AuthorityOperationGroupDomainService.GetAuthorityOperationGroupList(CreateAuthorityOperationGroupQueryObject(filter));
+            var authorityOperationGroupList = authorityOperationGroupService.GetAuthorityOperationGroupList(CreateAuthorityOperationGroupQueryObject(filter));
             return authorityOperationGroupList.Select(c => c.MapTo<AuthorityOperationGroupDto>()).ToList();
         }
 
@@ -474,7 +482,7 @@ namespace EZNEW.Business.Sys
         /// <returns></returns>
         public IPaging<AuthorityOperationGroupDto> GetAuthorityOperationGroupPaging(AuthorityOperationGroupFilterDto filter)
         {
-            var authorityOperationGroupPaging = AuthorityOperationGroupDomainService.GetAuthorityOperationGroupPaging(CreateAuthorityOperationGroupQueryObject(filter));
+            var authorityOperationGroupPaging = authorityOperationGroupService.GetAuthorityOperationGroupPaging(CreateAuthorityOperationGroupQueryObject(filter));
             return authorityOperationGroupPaging.ConvertTo<AuthorityOperationGroupDto>();
         }
 
@@ -500,7 +508,7 @@ namespace EZNEW.Business.Sys
 
                 #endregion
 
-                var deleteResult = AuthorityOperationGroupDomainService.DeleteAuthorityOperationGroup(deleteInfo.AuthorityOperationGroupIds);
+                var deleteResult = authorityOperationGroupService.DeleteAuthorityOperationGroup(deleteInfo.AuthorityOperationGroupIds);
                 if (!deleteResult.Success)
                 {
                     return deleteResult;
@@ -527,7 +535,7 @@ namespace EZNEW.Business.Sys
             }
             using (var businessWork = WorkFactory.Create())
             {
-                var modifyResult = AuthorityOperationGroupDomainService.ModifySortIndex(sortInfo.AuthorityOperationGroupSysNo, sortInfo.NewSort);
+                var modifyResult = authorityOperationGroupService.ModifySortIndex(sortInfo.AuthorityOperationGroupSysNo, sortInfo.NewSort);
                 if (!modifyResult.Success)
                 {
                     return modifyResult;
@@ -552,7 +560,7 @@ namespace EZNEW.Business.Sys
             {
                 return false;
             }
-            return AuthorityOperationGroupDomainService.ExistGroupName(nameInfo.GroupName, nameInfo.ExcludeGroupId);
+            return authorityOperationGroupService.ExistGroupName(nameInfo.GroupName, nameInfo.ExcludeGroupId);
         }
 
         #endregion
@@ -576,7 +584,7 @@ namespace EZNEW.Business.Sys
             }
             using (var businessWork = WorkFactory.Create())
             {
-                var saveResult = AuthorityOperationDomainService.SaveAuthorityOperation(saveInfo.AuthorityOperation.MapTo<AuthorityOperation>());
+                var saveResult = authorityOperationService.SaveAuthorityOperation(saveInfo.AuthorityOperation.MapTo<AuthorityOperation>());
                 if (!saveResult.Success)
                 {
                     return Result<AuthorityOperationDto>.FailedResult(saveResult.Message);
@@ -607,7 +615,7 @@ namespace EZNEW.Business.Sys
         /// <returns></returns>
         public AuthorityOperationDto GetAuthorityOperation(AuthorityOperationFilterDto filter)
         {
-            var authorityOperation = AuthorityOperationDomainService.GetAuthorityOperation(CreateAuthorityOperationQueryObject(filter));
+            var authorityOperation = authorityOperationService.GetAuthorityOperation(CreateAuthorityOperationQueryObject(filter));
             return authorityOperation.MapTo<AuthorityOperationDto>();
         }
 
@@ -622,7 +630,7 @@ namespace EZNEW.Business.Sys
         /// <returns></returns>
         public List<AuthorityOperationDto> GetAuthorityOperationList(AuthorityOperationFilterDto filter)
         {
-            var authorityOperationList = AuthorityOperationDomainService.GetAuthorityOperationList(CreateAuthorityOperationQueryObject(filter));
+            var authorityOperationList = authorityOperationService.GetAuthorityOperationList(CreateAuthorityOperationQueryObject(filter));
             return authorityOperationList.Select(c => c.MapTo<AuthorityOperationDto>()).ToList();
         }
 
@@ -637,7 +645,7 @@ namespace EZNEW.Business.Sys
         /// <returns></returns>
         public IPaging<AuthorityOperationDto> GetAuthorityOperationPaging(AuthorityOperationFilterDto filter)
         {
-            var authorityOperationPaging = AuthorityOperationDomainService.GetAuthorityOperationPaging(CreateAuthorityOperationQueryObject(filter));
+            var authorityOperationPaging = authorityOperationService.GetAuthorityOperationPaging(CreateAuthorityOperationQueryObject(filter));
             return authorityOperationPaging.ConvertTo<AuthorityOperationDto>();
         }
 
@@ -663,7 +671,7 @@ namespace EZNEW.Business.Sys
 
                 #endregion
 
-                AuthorityOperationDomainService.DeleteAuthorityOperation(deleteInfo.AuthorityOperationIds);
+                authorityOperationService.DeleteAuthorityOperation(deleteInfo.AuthorityOperationIds);
                 var exectVal = businessWork.Commit();
                 return exectVal.ExecutedSuccess ? Result.SuccessResult("删除成功") : Result.FailedResult("删除失败");
             }
@@ -697,7 +705,7 @@ namespace EZNEW.Business.Sys
                         Status = statusItem.Value
                     });
                 }
-                var modifyResult = AuthorityOperationDomainService.ModifyStatus(newStatusList.ToArray());
+                var modifyResult = authorityOperationService.ModifyStatus(newStatusList.ToArray());
                 if (!modifyResult.Success)
                 {
                     return modifyResult;
@@ -722,7 +730,7 @@ namespace EZNEW.Business.Sys
         /// <returns></returns>
         public bool ExistAuthorityOperationName(string name, long excludeId)
         {
-            return AuthorityOperationDomainService.ExistOperationName(name, excludeId);
+            return authorityOperationService.ExistOperationName(name, excludeId);
         }
 
         #endregion
@@ -744,7 +752,7 @@ namespace EZNEW.Business.Sys
             }
             using (var businessWork = WorkFactory.Create())
             {
-                var modifyResult = AuthorityBindAuthorityOperationDomainService.ModifyAuthorityAndAuthorityOperationBind(bindInfo.MapTo<ModifyAuthorityAndAuthorityOperationBind>());
+                var modifyResult = authorityBindAuthorityOperationService.ModifyAuthorityAndAuthorityOperationBind(bindInfo.MapTo<ModifyAuthorityAndAuthorityOperationBind>());
                 if (!modifyResult.Success)
                 {
                     return modifyResult;
@@ -773,7 +781,7 @@ namespace EZNEW.Business.Sys
             }
             using (var businessWork = WorkFactory.Create())
             {
-                var modifyResult = AuthorizeDomainService.ModifyRoleAuthorize(authInfo.MapTo<ModifyRoleAuthorize>());
+                var modifyResult = authorizeService.ModifyRoleAuthorize(authInfo.MapTo<ModifyRoleAuthorize>());
                 if (!modifyResult.Success)
                 {
                     return modifyResult;
@@ -800,7 +808,7 @@ namespace EZNEW.Business.Sys
             }
             using (var businessWork = WorkFactory.Create())
             {
-                var modifyResult = AuthorizeDomainService.ModifyUserAuthorize(authorizeInfo.UserAuthorizes.Select(c => c.MapTo<UserAuthorize>()));
+                var modifyResult = authorizeService.ModifyUserAuthorize(authorizeInfo.UserAuthorizes.Select(c => c.MapTo<UserAuthorize>()));
                 if (!modifyResult.Success)
                 {
                     return modifyResult;
@@ -825,7 +833,7 @@ namespace EZNEW.Business.Sys
             {
                 return false;
             }
-            return AuthorizeDomainService.Authentication(auth.MapTo<Authentication>());
+            return authorizeService.Authentication(auth.MapTo<Authentication>());
         }
 
         #endregion
@@ -863,7 +871,7 @@ namespace EZNEW.Business.Sys
                 }
                 if (!filter.NameCodeMateKey.IsNullOrEmpty())
                 {
-                    query.And<AuthorityQuery>(QueryOperator.OR, CriteriaOperator.Like, filter.NameCodeMateKey,null, a => a.Code, a => a.Name);
+                    query.And<AuthorityQuery>(QueryOperator.OR, CriteriaOperator.Like, filter.NameCodeMateKey, null, a => a.Code, a => a.Name);
                 }
                 if (filter.AuthType.HasValue)
                 {
@@ -1190,7 +1198,7 @@ namespace EZNEW.Business.Sys
                 }
                 if (!filter.OperationMateKey.IsNullOrEmpty())
                 {
-                    query.And<AuthorityOperationQuery>(QueryOperator.OR, CriteriaOperator.Like, filter.OperationMateKey,null, u => u.Name, u => u.ControllerCode, u => u.ActionCode);
+                    query.And<AuthorityOperationQuery>(QueryOperator.OR, CriteriaOperator.Like, filter.OperationMateKey, null, u => u.Name, u => u.ControllerCode, u => u.ActionCode);
                 }
                 if (!filter.ControllerCode.IsNullOrEmpty())
                 {

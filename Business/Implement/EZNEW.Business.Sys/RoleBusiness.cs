@@ -17,6 +17,7 @@ using EZNEW.Domain.Sys.Model;
 using EZNEW.Domain.Sys.Service;
 using EZNEW.DTO.Sys.Query.Filter;
 using EZNEW.Query.Sys;
+using EZNEW.Framework.IoC;
 
 namespace EZNEW.Business.Sys
 {
@@ -25,6 +26,8 @@ namespace EZNEW.Business.Sys
     /// </summary>
     public class RoleBusiness : IRoleBusiness
     {
+        static IRoleService roleService = ContainerManager.Resolve<IRoleService>();
+
         public RoleBusiness()
         {
         }
@@ -44,7 +47,7 @@ namespace EZNEW.Business.Sys
             }
             using (var businessWork = WorkFactory.Create())
             {
-                var roleResult = RoleDomainService.SaveRole(saveInfo.Role.MapTo<Role>());
+                var roleResult = roleService.SaveRole(saveInfo.Role.MapTo<Role>());
                 if (!roleResult.Success)
                 {
                     return Result<RoleDto>.FailedResult(roleResult.Message);
@@ -75,7 +78,7 @@ namespace EZNEW.Business.Sys
         /// <returns></returns>
         public RoleDto GetRole(RoleFilterDto filter)
         {
-            var role = RoleDomainService.GetRole(CreateQueryObject(filter));
+            var role = roleService.GetRole(CreateQueryObject(filter));
             return role.MapTo<RoleDto>();
         }
 
@@ -101,7 +104,7 @@ namespace EZNEW.Business.Sys
 
                 #endregion
 
-                RoleDomainService.RemoveRole(deleteInfo.RoleIds);
+                roleService.RemoveRole(deleteInfo.RoleIds);
                 var exectVal = businessWork.Commit();
                 return exectVal.ExecutedSuccess ? Result.SuccessResult("删除成功") : Result.FailedResult("删除失败");
             }
@@ -118,7 +121,7 @@ namespace EZNEW.Business.Sys
         /// <returns></returns>
         public List<RoleDto> GetRoleList(RoleFilterDto filter)
         {
-            var roleList = RoleDomainService.GetRoleList(CreateQueryObject(filter));
+            var roleList = roleService.GetRoleList(CreateQueryObject(filter));
             return roleList.Select(c => c.MapTo<RoleDto>()).ToList();
         }
 
@@ -133,7 +136,7 @@ namespace EZNEW.Business.Sys
         /// <returns></returns>
         public IPaging<RoleDto> GetRolePaging(RoleFilterDto filter)
         {
-            var rolePaging = RoleDomainService.GetRolePaging(CreateQueryObject(filter));
+            var rolePaging = roleService.GetRolePaging(CreateQueryObject(filter));
             return rolePaging.ConvertTo<RoleDto>();
         }
 
@@ -159,7 +162,7 @@ namespace EZNEW.Business.Sys
 
                 #endregion
 
-                var modifyResult = RoleDomainService.ModifyRoleSortIndex(sortIndexInfo.RoleSysNo, sortIndexInfo.NewSortIndex);
+                var modifyResult = roleService.ModifyRoleSortIndex(sortIndexInfo.RoleSysNo, sortIndexInfo.NewSortIndex);
                 if (!modifyResult.Success)
                 {
                     return modifyResult;
@@ -184,7 +187,7 @@ namespace EZNEW.Business.Sys
             {
                 return false;
             }
-            return RoleDomainService.ExistRoleName(existInfo.RoleName, existInfo.ExcludeRoleId);
+            return roleService.ExistRoleName(existInfo.RoleName, existInfo.ExcludeRoleId);
         }
 
         #endregion

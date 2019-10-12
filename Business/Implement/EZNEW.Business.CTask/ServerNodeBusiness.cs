@@ -17,6 +17,7 @@ using EZNEW.Query.CTask;
 using EZNEW.DTO.CTask.Query.Filter;
 using EZNEW.Domain.CTask.Service;
 using EZNEW.Framework.Response;
+using EZNEW.Framework.IoC;
 
 namespace EZNEW.Business.CTask
 {
@@ -25,6 +26,8 @@ namespace EZNEW.Business.CTask
     /// </summary>
     public class ServerNodeBusiness : IServerNodeBusiness
     {
+        IServerNodeService serverNodeService = ContainerManager.Resolve<IServerNodeService>();
+
         public ServerNodeBusiness()
         {
         }
@@ -45,7 +48,7 @@ namespace EZNEW.Business.CTask
                     return Result<ServerNodeDto>.FailedResult("服务节点信息为空");
                 }
                 var serverNode = saveInfo.ServerNode.MapTo<ServerNode>();
-                ServerNodeDomainService.SaveServerNode(serverNode);
+                serverNodeService.SaveServerNode(serverNode);
                 var commitResult = businessWork.Commit();
                 Result<ServerNodeDto> result = null;
                 if (commitResult.ExecutedSuccess)
@@ -72,7 +75,7 @@ namespace EZNEW.Business.CTask
         /// <returns></returns>
         public ServerNodeDto GetServerNode(ServerNodeFilterDto filter)
         {
-            var serverNode = ServerNodeDomainService.GetServerNode(CreateQueryObject(filter));
+            var serverNode = serverNodeService.GetServerNode(CreateQueryObject(filter));
             return serverNode.MapTo<ServerNodeDto>();
         }
 
@@ -87,7 +90,7 @@ namespace EZNEW.Business.CTask
         /// <returns></returns>
         public List<ServerNodeDto> GetServerNodeList(ServerNodeFilterDto filter)
         {
-            var serverNodeList = ServerNodeDomainService.GetServerNodeList(CreateQueryObject(filter));
+            var serverNodeList = serverNodeService.GetServerNodeList(CreateQueryObject(filter));
             return serverNodeList.Select(c => c.MapTo<ServerNodeDto>()).ToList();
         }
 
@@ -102,7 +105,7 @@ namespace EZNEW.Business.CTask
         /// <returns></returns>
         public IPaging<ServerNodeDto> GetServerNodePaging(ServerNodeFilterDto filter)
         {
-            var serverNodePaging = ServerNodeDomainService.GetServerNodePaging(CreateQueryObject(filter));
+            var serverNodePaging = serverNodeService.GetServerNodePaging(CreateQueryObject(filter));
             return serverNodePaging.ConvertTo<ServerNodeDto>();
         }
 
@@ -128,9 +131,9 @@ namespace EZNEW.Business.CTask
 
                 #endregion
 
-                var nowServers =ServerNodeDomainService.GetServerNodeList(QueryFactory.Create<ServerNodeQuery>(c => deleteInfo.ServerNodeIds.Contains(c.Id)));
+                var nowServers =serverNodeService.GetServerNodeList(QueryFactory.Create<ServerNodeQuery>(c => deleteInfo.ServerNodeIds.Contains(c.Id)));
                 //删除逻辑
-                ServerNodeDomainService.DeleteServerNode(deleteInfo.ServerNodeIds);
+                serverNodeService.DeleteServerNode(deleteInfo.ServerNodeIds);
                 var commitResult = businessWork.Commit();
                 return commitResult.ExecutedSuccess ? Result.SuccessResult("删除成功") : Result.FailedResult("删除失败");
             }
@@ -154,7 +157,7 @@ namespace EZNEW.Business.CTask
                     return Result.FailedResult("没有指定要修改的服务信息");
                 }
                 var servers = stateInfo.Servers.Select(c => c.MapTo<ServerNode>());
-                ServerNodeDomainService.ModifyServerNodeRunState(servers);
+                serverNodeService.ModifyServerNodeRunState(servers);
                 var commitResult = businessWork.Commit();
                 return commitResult.ExecutedSuccess ? Result.SuccessResult("修改成功") : Result.FailedResult("修改失败");
             }

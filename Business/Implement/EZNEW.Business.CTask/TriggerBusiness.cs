@@ -18,6 +18,7 @@ using EZNEW.Develop.UnitOfWork;
 using EZNEW.CTask;
 using EZNEW.Domain.CTask.Service;
 using EZNEW.Framework.Response;
+using EZNEW.Framework.IoC;
 
 namespace EZNEW.Business.CTask
 {
@@ -26,6 +27,8 @@ namespace EZNEW.Business.CTask
     /// </summary>
     public class TriggerBusiness : ITriggerBusiness
     {
+        ITriggerService triggerService = ContainerManager.Resolve<ITriggerService>();
+
         public TriggerBusiness()
         {
         }
@@ -47,7 +50,7 @@ namespace EZNEW.Business.CTask
                 }
                 Result<TriggerDto> result = null;
                 var trigger = saveInfo.Trigger.MapTo<Trigger>();
-                TriggerDomainService.SaveTrigger(trigger);//保存执行计划
+                triggerService.SaveTrigger(trigger);//保存执行计划
                 var commitResult = businessWork.Commit();
                 if (commitResult.ExecutedSuccess)
                 {
@@ -73,7 +76,7 @@ namespace EZNEW.Business.CTask
         /// <returns></returns>
         public TriggerDto GetTrigger(TriggerFilterDto filter)
         {
-            var trigger = TriggerDomainService.GetTrigger(CreateQueryObject(filter));
+            var trigger = triggerService.GetTrigger(CreateQueryObject(filter));
             return trigger.MapTo<TriggerDto>();
         }
 
@@ -88,7 +91,7 @@ namespace EZNEW.Business.CTask
         /// <returns></returns>
         public List<TriggerDto> GetTriggerList(TriggerFilterDto filter)
         {
-            var triggerList = TriggerDomainService.GetTriggerList(CreateQueryObject(filter));
+            var triggerList = triggerService.GetTriggerList(CreateQueryObject(filter));
             return triggerList.Select(c => c.MapTo<TriggerDto>()).ToList();
         }
 
@@ -103,7 +106,7 @@ namespace EZNEW.Business.CTask
         /// <returns></returns>
         public IPaging<TriggerDto> GetTriggerPaging(TriggerFilterDto filter)
         {
-            var triggerPaging = TriggerDomainService.GetTriggerPaging(CreateQueryObject(filter));
+            var triggerPaging = triggerService.GetTriggerPaging(CreateQueryObject(filter));
             return triggerPaging.ConvertTo<TriggerDto>();
         }
 
@@ -130,7 +133,7 @@ namespace EZNEW.Business.CTask
                 #endregion
 
                 //删除逻辑
-                TriggerDomainService.DeleteTrigger(deleteInfo.TriggerIds);
+                triggerService.DeleteTrigger(deleteInfo.TriggerIds);
                 var commitResult = businessWork.Commit();
                 return commitResult.ExecutedSuccess ? Result.SuccessResult("删除成功") : Result.FailedResult("删除失败");
             }
@@ -153,7 +156,7 @@ namespace EZNEW.Business.CTask
             }
             using (var businessWork = WorkFactory.Create())
             {
-                TriggerDomainService.ModifyTriggerState(stateInfo.Triggers.Select(c => c.MapTo<Trigger>()));
+                triggerService.ModifyTriggerState(stateInfo.Triggers.Select(c => c.MapTo<Trigger>()));
                 var commitResult = businessWork.Commit();
                 var result = commitResult.ExecutedSuccess ? Result.SuccessResult("修改成功") : Result.FailedResult("修改失败");
                 return result;

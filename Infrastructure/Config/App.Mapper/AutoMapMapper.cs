@@ -11,7 +11,7 @@ using EZNEW.ViewModel.Sys.Filter;
 using EZNEW.ViewModel.Sys.Request;
 using EZNEW.ViewModel.Sys.Response;
 using EZNEW.Domain.Sys.Model;
-using EZNEW.Domain.Sys.Service.Request;
+using EZNEW.Domain.Sys.Service.Param;
 using EZNEW.DTO.Sys.Cmd;
 using EZNEW.DTO.Sys.Query;
 using EZNEW.DTO.Sys.Query.Filter;

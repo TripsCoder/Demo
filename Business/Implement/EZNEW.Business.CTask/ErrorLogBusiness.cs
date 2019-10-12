@@ -17,6 +17,7 @@ using EZNEW.Develop.UnitOfWork;
 using EZNEW.Domain.CTask.Service;
 using EZNEW.BusinessContract.CTask;
 using EZNEW.Framework.Response;
+using EZNEW.Framework.IoC;
 
 namespace EZNEW.Business.CTask
 {
@@ -25,6 +26,8 @@ namespace EZNEW.Business.CTask
     /// </summary>
     public class ErrorLogBusiness : IErrorLogBusiness
     {
+        IErrorLogService errorLogService = ContainerManager.Resolve<IErrorLogService>();
+
         public ErrorLogBusiness()
         {
         }
@@ -44,7 +47,7 @@ namespace EZNEW.Business.CTask
             }
             using (var businessWork = WorkFactory.Create())
             {
-                ErrorLogDomainService.SaveErrorLog(saveInfo.ErrorLogs.Select(c => { c.Id = ErrorLog.GenerateErrorLogId(); return c.MapTo<ErrorLog>(); }));
+                errorLogService.SaveErrorLog(saveInfo.ErrorLogs.Select(c => { c.Id = ErrorLog.GenerateErrorLogId(); return c.MapTo<ErrorLog>(); }));
                 var commitResult = businessWork.Commit();
                 return commitResult.ExecutedSuccess ? Result.SuccessResult("保存成功") : Result.FailedResult("保存失败");
             }
@@ -61,7 +64,7 @@ namespace EZNEW.Business.CTask
         /// <returns></returns>
         public ErrorLogDto GetErrorLog(ErrorLogFilterDto filter)
         {
-            var errorLog = ErrorLogDomainService.GetErrorLog(CreateQueryObject(filter));
+            var errorLog = errorLogService.GetErrorLog(CreateQueryObject(filter));
             return errorLog.MapTo<ErrorLogDto>();
         }
 
@@ -76,7 +79,7 @@ namespace EZNEW.Business.CTask
         /// <returns></returns>
         public List<ErrorLogDto> GetErrorLogList(ErrorLogFilterDto filter)
         {
-            var errorLogList = ErrorLogDomainService.GetErrorLogList(CreateQueryObject(filter));
+            var errorLogList = errorLogService.GetErrorLogList(CreateQueryObject(filter));
             return errorLogList.Select(c => c.MapTo<ErrorLogDto>()).ToList();
         }
 
@@ -91,7 +94,7 @@ namespace EZNEW.Business.CTask
         /// <returns></returns>
         public IPaging<ErrorLogDto> GetErrorLogPaging(ErrorLogFilterDto filter)
         {
-            var errorLogPaging = ErrorLogDomainService.GetErrorLogPaging(CreateQueryObject(filter));
+            var errorLogPaging = errorLogService.GetErrorLogPaging(CreateQueryObject(filter));
             return errorLogPaging.ConvertTo<ErrorLogDto>();
         }
 

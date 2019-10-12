@@ -13,6 +13,7 @@ using EZNEW.Framework;
 using System.Linq.Expressions;
 using EZNEW.Framework.ExpressionUtil;
 using EZNEW.Application.Identity.User;
+using EZNEW.Framework.IoC;
 
 namespace EZNEW.Domain.Sys.Model
 {
@@ -32,6 +33,8 @@ namespace EZNEW.Domain.Sys.Model
         /// role loaded
         /// </summary>
         private bool roleLoaded = false;
+
+        IRoleService roleService = ContainerManager.Resolve<IRoleService>();
 
         #endregion
 
@@ -143,7 +146,7 @@ namespace EZNEW.Domain.Sys.Model
             {
                 return roleList;
             }
-            var nowRoles = RoleDomainService.GetUserBindRole(sysNo);
+            var nowRoles = roleService.GetUserBindRole(sysNo);
             roleList.AddRange(nowRoles);
             roleLoaded = true;
             return roleList;
