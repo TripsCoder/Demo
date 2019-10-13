@@ -148,14 +148,6 @@ namespace EZNEW.Domain.Sys.Service.Impl
 
             IQuery roleQuery = QueryFactory.Create<RoleQuery>(r => r.SysNo == newRole.SysNo);
             Role role = roleRepository.Get(roleQuery);
-
-            //保存一个新的对象
-            newRole.Save();//新增-已Level=1
-
-            IQuery removeQuery = QueryFactory.Create<RoleQuery>(r => r.Level == 1);
-            roleRepository.Remove(removeQuery);
-
-
             if (role == null)
             {
                 return Result<Role>.FailedResult("没有指定要操作的角色信息");

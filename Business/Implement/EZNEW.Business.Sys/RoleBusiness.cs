@@ -37,8 +37,8 @@ namespace EZNEW.Business.Sys
         /// <summary>
         /// 保存角色
         /// </summary>
-        /// <param name="saveInfo">保存信息</param>
-        /// <returns></returns>
+        /// <param name="saveInfo">角色保存信息</param>
+        /// <returns>执行结果</returns>
         public Result<RoleDto> SaveRole(SaveRoleCmdDto saveInfo)
         {
             if (saveInfo == null)
@@ -198,7 +198,7 @@ namespace EZNEW.Business.Sys
         /// 根据查询条件生成查询对象
         /// </summary>
         /// <param name="filter">查询条件</param>
-        /// <returns></returns>
+        /// <returns>查询表达式对象</returns>
         public IQuery CreateQueryObject(RoleFilterDto filter)
         {
             if (filter == null)

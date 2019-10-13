@@ -30,8 +30,8 @@ namespace EZNEW.AppService.Sys
         /// <summary>
         /// 保存角色
         /// </summary>
-        /// <param name="saveInfo">保存信息</param>
-        /// <returns></returns>
+        /// <param name="saveInfo">角色保存信息</param>
+        /// <returns>执行结果</returns>
         public Result<RoleDto> SaveRole(SaveRoleCmdDto saveInfo)
         {
             return roleBusiness.SaveRole(saveInfo);

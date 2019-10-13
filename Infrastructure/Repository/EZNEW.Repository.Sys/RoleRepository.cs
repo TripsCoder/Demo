@@ -15,7 +15,7 @@ using EZNEW.Develop.CQuery;
 namespace EZNEW.Repository.Sys
 {
     /// <summary>
-    /// 角色存储
+    /// 角色资源存储
     /// </summary>
     public class RoleRepository : DefaultAggregationRepository<Role, RoleEntity, IRoleDataAccess>, IRoleRepository
     {
